@@ -11,6 +11,8 @@ logger = getLogger("MySelf")
 BAN = "\\/:*?\"<>|"
 # 替代用字元
 REPLACE = "_"
+# 網址
+URL = "https://myself-bbs.com"
 
 # 偽裝瀏覽器
 HEADERS = {
@@ -46,7 +48,7 @@ def badname(name: str) -> str:
     :return: "白色相簿2"
     """
     for char in BAN: name = name.replace(char, REPLACE)
-    return name.strip()
+    return name
 
 
 class Myself:
@@ -58,11 +60,11 @@ class Myself:
                 return r.content.decode("utf-8")
             return None
         except RequestException as e:
-            logger.error(f"請求有錯誤: {e}")
+            logger.error(f"Request Error: {e}")
             return None
 
     @classmethod
-    def week_animate(cls) -> dict:
+    def week_animate(self) -> dict:
         """
         爬首頁的每週更新表。
         :return: dict。
@@ -78,24 +80,24 @@ class Myself:
             ...
         }
         """
-        res = cls._req(url="https://myself-bbs.com/portal.php")
+        res = self._req(url=f"{URL}/portal.php")
+        if res == None:
+            return {}
         data = {}
-        if res and res.ok:
-            html = BeautifulSoup(res.text, features="lxml")
-            elements = html.find("div", id="tabSuCvYn")
-            for index, elements in enumerate(elements.find_all("div", class_="module cl xl xl1")):
-                animates = []
-                for element in elements:
-                    animates.append({
-                        "name": element.find("a")["title"],
-                        "url": f"https://myself-bbs.com/{element.find('a')['href']}",
-                        "update_color": element.find("span").find("font").find("font")["style"],
-                        "update": element.find("span").find("font").text,
-                    })
-                data.update({
-                    week[index]: animates
+        pos = (res.find("<div id=\"tabSuCvYn_title\""), res.find("<div id=\"tabSuCvYn_content\""))
+        elements = res[pos[0], pos[1]]
+        for index, elements in enumerate(elements.find_all("div", class_="module cl xl xl1")):
+            animates = []
+            for element in elements:
+                animates.append({
+                    "name": element.find("a")["title"],
+                    "url": f"https://myself-bbs.com/{element.find('a')['href']}",
+                    "update_color": element.find("span").find("font").find("font")["style"],
+                    "update": element.find("span").find("font").text,
                 })
-        return data
+            data.update({
+                week[index]: animates
+            })
 
     @staticmethod
     def animate_info_video_data(html: BeautifulSoup) -> list:
