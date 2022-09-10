@@ -1,285 +1,249 @@
-from functools import reduce
+from logging import getLogger
+from os import makedirs
+from os.path import isdir, isfile
+from typing import Union
+from urllib.parse import unquote
 
-import m3u8
-import requests
 from bs4 import BeautifulSoup
+from bs4.element import Tag
+from requests import get
+from requests.exceptions import RequestException, Timeout
+
+logger = getLogger("MySelf")
+
+# 資料節不可包含之字元:\/:*?"<>|
+BAN = "\\/:*?\"<>|"
+# 替代用字元
+REPLACE = "_"
+# 網址
+URL = "https://myself-bbs.com"
 
 # 偽裝瀏覽器
-headers = {
-    'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Mobile Safari/537.36 Edg/93.0.961.52',
-}
-
-# 星期一 ~ 星期日
-week = {
-    0: 'Monday',
-    1: 'Tuesday',
-    2: 'Wednesday',
-    3: 'Thursday',
-    4: 'Friday',
-    5: 'Saturday',
-    6: 'Sunday',
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.114 Safari/537.36 OPR/89.0.4447.64 (Edition GX-CN)",
 }
 
 # 動漫資訊的 Key 對照表
-animate_table = {
-    '作品類型': 'animate_type',
-    '首播日期': 'premiere_date',
-    '播出集數': 'episode',
-    '原著作者': 'author',
-    '官方網站': 'official_website',
-    '備注': 'remarks',
+ANIMATE_TABLE = {
+    "作品類型": "animate_type",
+    "首播日期": "premiere_date",
+    "播出集數": "episode_number",
+    "原著作者": "author",
+    "官方網站": "official_website",
+    "備注": "remarks",
 }
 
+# 全形半形轉換表
+HF_CONVERT = [("（", "("), ("）", ")")]
 
-def badname(name: str) -> str:
+
+def retouch_name(name: str) -> str:
     """
     避免不正當名字出現導致資料夾或檔案無法創建。
-    :param name: 名字。
-    :return: '白色相簿2'
+    :param name: str 名字。
+    :return: str
     """
-    ban = r'\/:*?"<>|'
-    return reduce(lambda x, y: x + y if y not in ban else x + ' ', name).strip()
+    for char in BAN: name = name.replace(char, REPLACE)
+    return name
+
+def retouch_url(name: str) -> str:
+    """
+    避免不正當名字出現導致資料夾或檔案無法創建。
+    :param name: str 名字。
+    :return: str
+    """
+    for char in BAN:
+        if char == "/":
+            continue
+        name = name.replace(char, REPLACE)
+    return name
 
 
 class Myself:
     @staticmethod
-    def _req(url: str, timeout: tuple = (5, 5)) -> requests:
+    def _req(url: str, timeout: int=5) -> Union[str, None]:
         try:
-            return requests.get(url=url, headers=headers, timeout=timeout)
-        except requests.exceptions.RequestException as error:
-            print(f'請求有錯誤: {error}')
+            r = get(url=url, headers=HEADERS, timeout=timeout)
+            if r and r.ok:
+                if URL in url:
+                    file = url.replace(URL, "cache")
+                else:
+                    url = url.replace("://", "").split("/")
+                    url[0] = "cache"
+                    file = "/".join(url)
+                file = retouch_url(file)
+                path = "/".join(file.split("/")[:-1])
+                if not isdir(path): makedirs(path)
+                with open(file, mode="wb") as save_file: save_file.write(r.content)
+                return r.content.decode("utf-8")
+            return None
+        except Timeout:
+            file = url.replace(URL, "cache")
+            file = retouch_url(file)
+            if not isfile(file): return None
+            logger.error(f"Request Timeout.")
+            with open(file, mode="rb") as cache_file: return cache_file.read().decode("utf-8")
+        except RequestException as e:
+            logger.error(f"Request Error: {e}")
+            return None
+    
+    @staticmethod
+    def _save_to_cache(url: str, timeout: int=5) -> None:
+        try:
+            if URL in url:
+                file = url.replace(URL, "cache")
+            else:
+                url = url.replace("://", "").split("/")
+                url[0] = "cache"
+                file = "/".join(url)
+            file = retouch_url(file)
+            path = "/".join(file.split("/")[:-1])
+            if isfile(file): return None
+            if not isdir(path): makedirs(path)
+            r = get(url=url, headers=HEADERS, timeout=timeout)
+            with open(file, mode="wb") as save_file: save_file.write(r.content)
+            return None
+        except RequestException as e:
+            logger.error(f"Request Error: {e}")
             return None
 
+    @staticmethod
+    def _url_to_html(url: str, timeout: int=5) -> Union[str, None]:
+        if url == None or url == "": return None
+        if "!DOCTYPE html" in url: return url
+        if "www.google.com/url?" in url: url = unquote(url.split("url=")[1].split("&")[0])
+        return Myself._req(url, timeout)
+
     @classmethod
-    def week_animate(cls) -> dict:
+    def week_animate(self) -> list:
         """
         爬首頁的每週更新表。
-        :return: dict。
-        {
-            'Monday': [{
-                'name': 動漫名字,
-                'url': 動漫網址,
-                'update_color: 網頁上面"更新"的字體顏色'
-                'color': 字體顏色,
-                'update': 更新級數文字,
-            }, ...],
-            'Tuesday': [{...}],
-            ...
-        }
-        """
-        res = cls._req(url='https://myself-bbs.com/portal.php')
-        data = {}
-        if res and res.ok:
-            html = BeautifulSoup(res.text, features='lxml')
-            elements = html.find('div', id='tabSuCvYn')
-            for index, elements in enumerate(elements.find_all('div', class_='module cl xl xl1')):
-                animates = []
-                for element in elements:
-                    animates.append({
-                        'name': element.find('a')['title'],
-                        'url': f"https://myself-bbs.com/{element.find('a')['href']}",
-                        'update_color': element.find('span').find('font').find('font')['style'],
-                        'update': element.find('span').find('font').text,
-                    })
-                data.update({
-                    week[index]: animates
-                })
-        return data
+        (index 0 對應星期一)
 
-    @staticmethod
-    def animate_info_video_data(html: BeautifulSoup) -> list:
+        return: :class:`list`
+        [
+            [
+                {
+                    "name": 動漫名字,
+                    "url": 動漫網址,
+                    "color": 字體顏色,
+                    "update": 更新集數,
+                },
+                {...}
+            ],
+            [...]
+        ]
         """
-        取得動漫網頁的影片 Api Url。
-        :param html: BeautifulSoup 解析的網頁。
-        :return: [{name: 第幾集名稱, url: 網址}]
-        """
-        data = []
-        for main_list in html.select('ul.main_list'):
-            for a in main_list.find_all('a', href='javascript:;'):
-                name = a.text
-                for display in a.parent.select("ul.display_none li"):
-                    if display.select_one("a").text == '站內':
-                        a = display.select_one("a[data-href*='v.myself-bbs.com']")
-                        video_url = a["data-href"].replace('player/play', 'vpx').replace("\r", "").replace("\n", "")
-                        data.append({'name': badname(name=name), 'url': video_url})
-        return data
-
-    @staticmethod
-    def animate_info_table(html: BeautifulSoup) -> dict:
-        """
-        取得動漫資訊
-        :return: {
-            animate_type: 作品類型,
-            premiere_date: 首播日期,
-            episode: 播出集數,
-            author: 原著作者,
-            official_website: 官方網站,
-            remarks: 備注,
-            synopsis: 簡介
-        }
-        """
-        data = {}
-        for elements in html.find_all('div', class_='info_info'):
-            for element in elements.find_all('li'):
-                text = element.text
-                key, value = text.split(': ')
-                data.update({animate_table[key]: value})
-            for element in elements.find_all('p'):
-                data.update({'synopsis': element.text})
-        for elements in html.find_all('div', class_='info_img_box fl'):
-            for element in elements.find_all('img'):
-                data.update({'image': element['src']})
-        return data
+        res = self._req(url=f"{URL}/portal.php")
+        if res == None:
+            return []
+        week_data = []
+        week_elements: list[Tag] = BeautifulSoup(res, features="html.parser").find("div", id="tabSuCvYn").find_all("div", class_="module cl xl xl1")
+        for day_element in week_elements:
+            day_data = []
+            for element in day_element.find_all("li"):
+                print(element)
+                _a: Tag = element.find("a")
+                _fonts: list[Tag] = element.find_all("font")
+                day_data.append(
+                    {
+                        "name": _fonts[0].text,
+                        "url": f"{URL}/{_a.get('href')}",
+                        "color": _fonts[2].get("style")[:-1].split(": ")[1],
+                        "update": _fonts[2].text
+                    }
+                )
+            week_data.append(day_data)
+        return week_data
 
     @classmethod
-    def animate_total_info(cls, url: str) -> dict:
+    def animate_info_table(self, res: str) -> Union[dict, None]:
         """
-        取得動漫業面全部資訊。
-        :param url: str -> 要爬的網址。
-        :return: dict -> 動漫資料。
+        取得動漫資訊
+
+        res: :class:`str`
+            網頁或網址。
+
+        return: :class:`dict`
         {
-            url: 網址,
-            video: [{name: 第幾集名稱, url: 網址}]
             name: 名字,
             animate_type: 作品類型,
             premiere_date: 首播日期,
-            episode: 播出集數,
+            episode_number: 播出集數,
             author: 原著作者,
             official_website: 官方網站,
             remarks: 備注,
-            synopsis: 簡介
+            synopsis: 簡介,
+            image: 封面連結,
+            episode_data: [{name: 集數, url: 網址},{...}]
         }
         """
-        res = cls._req(url=url)
+        res = self._url_to_html(res)
+        if res == None: return None
+        # 一般信息
         data = {}
-        if res and res.ok:
-            html = BeautifulSoup(res.text, features='lxml')
-            data.update(cls.animate_info_table(html=html))
-            data.update({
-                'url': url,
-                'name': badname(html.find('title').text.split('【')[0]),
-                'video': cls.animate_info_video_data(html=html)
-            })
+        res: BeautifulSoup = BeautifulSoup(res, features="html.parser")
+        all_info: list[Tag] = res.find("div", class_="info_info").find_all("li")
+        for info in all_info:
+            key, value = info.text.split(": ")
+            data[ANIMATE_TABLE[key]] = value
+        img_src = res.find("div", class_="info_img_box").find("img").get("src")
+        self._save_to_cache(img_src)
+        data["name"] = res.find("title").text.split("【")[0]
+        data["image"] = img_src
+        data["synopsis"] = res.find("div", id="info_introduction_text").text
+        # 影片資料
+        _REPLACE_LIST = [("player/play", "vpx"), ("\r", ""), ("\n", "")]
+        episode_data = []
+        all_episodes: list[Tag] = res.find("ul", class_="main_list").select("a[href=\"javascript:;\"]")
+        for episode in all_episodes:
+            name = episode.text
+            data_url = episode.find_next("a").get("data-href")
+            for _replace in _REPLACE_LIST: data_url = data_url.replace(*_replace) # 更改連結&移除字元 \r \n
+            episode_data.append({"name": name, "url": data_url})
+        data["episode_data"] = episode_data
         return data
 
     @classmethod
-    def finish_list(cls) -> list:
+    def finish_list(self) -> dict:
         """
-        取得完結列表頁面的動漫資訊
-        :return: [{
-            'data': [
-                {'title': '2013年10月（秋）','data': [{'name': '白色相簿2', 'url': '動漫網址'}, {...}]},
-                {'title': '2013年07月（夏）', 'data': [{...}]}.
+        取得完結列表頁面的動漫資訊。
+
+        return: :class:`dict`
+        {
+            "2022": [
+                {"title": "2022年01月(冬)","data": [{"name": "失格紋的最強賢者", "url": "動漫網址"}, {...}]},
+                {"title": "2022年04月(春)", "data": [{...}]}.
                 {...},
             ]
-        }]
+        }
         """
-        res = cls._req(url='https://myself-bbs.com/portal.php?mod=topic&topicid=8')
-        data = []
-        if res and res.ok:
-            html = BeautifulSoup(res.text, features='lxml')
-            for elements in html.find_all('div', {'class': 'tab-title title column cl'}):
-                year_list = []
-                for element in elements.find_all('div', {'class': 'block move-span'}):
-                    year_month_title = element.find('span', {'class': 'titletext'}).text
-                    season_list = []
-                    for k in element.find_all('a'):
-                        season_list.append({'name': k['title'], 'url': f"https://myself-bbs.com/{k['href']}"})
-                    year_list.append({'title': year_month_title, 'data': season_list})
-                data.append({'data': year_list})
+        res = self._req(url=f"{URL}/portal.php?mod=topic&topicid=8")
+        if res == None:
+            return []
+        data = {}
+        all_years: list[Tag] = BeautifulSoup(res, features="html.parser").find_all("div", class_="tab-title title column cl")
+        for year in all_years:
+            year_list = []
+            all_seasons: list[Tag] = year.find_all("div", class_="blocktitle title")
+            for season in all_seasons:
+                season_data = {}
+                title = season.text
+                for _replace in HF_CONVERT: title = title.replace(*_replace)
+                season_data["title"] = title
+                all_animates: list[Tag] = season.find_next("div", class_="module cl xl xl1").find_all("a")
+                animate_list = []
+                for animate in all_animates:
+                    animate_list.append({"name": animate.text, "url": f"{URL}/{animate.get('href')}"})
+                season_data["data"] = animate_list
+                year_list.append(season_data)
+            year_list.reverse()
+            data[year_list[0]["title"].split("年")[0]] = year_list
         return data
 
-    @classmethod
-    def finish_animate_page_data(cls, url: str) -> list:
-        """
-        完結動漫頁面的動漫資料。
-        :param url: 要爬的網址。
-        :return: [{'url': 'https://myself-bbs.com/thread-43773-1-1.html', 'name': '白色相簿2'}, {...}]。
-        """
-        res = cls._req(url=url)
-        data = []
-        if res and res.ok:
-            html = BeautifulSoup(res.text, 'lxml')
-            for elements in html.find_all('div', class_='c cl'):
-                data.append({
-                    'url': f"https://myself-bbs.com/{elements.find('a')['href']}",
-                    'name': badname(elements.find('a')['title']),
-                    'image': f"https://myself-bbs.com/{elements.find('a').find('img')['src']}"
-                })
-        return data
-
-    @classmethod
-    def get_vpx_json(cls, url: str, timeout: tuple = (10, 10)) -> dict:
-        """
-        :param url: 影集的 Api Url。
-        :param timeout: 請求與讀取時間。
-        :return: 官網回應 json 格式。
-        """
-        res = cls._req(url=url, timeout=timeout)
-        if res and res.ok:
-            return res.json()
-
-    @classmethod
-    def get_m3u8_text(cls, url: str, timeout: tuple = (10, 10)) -> str:
-        """
-        :param url: m3u8 的 Api Url。
-        :param timeout: 請求與讀取時間。
-        :return: 官網回應 m3u8 格式。
-        """
-        res = cls._req(url=url, timeout=timeout)
-        if res and res.ok:
-            return res.text
-
-    @classmethod
-    def get_content(cls, url: str, timeout: tuple = (30, 30)) -> bytes:
-        """
-        :param url: 影片或圖片的 Url。
-        :param timeout: 請求與讀取時間。
-        :return: 影片或圖片的格式。
-        """
-        res = cls._req(url=url, timeout=timeout)
-        if res and res.ok:
-            return res.content
-
-    @classmethod
-    def download_animate_simple_example(cls):
-        """
-        這是一個下載動漫簡單範例，肯定會發生請求錯誤，請自己修改邏輯判斷。
-        :return:
-        """
-        # 取得白色相簿2的基本資訊。
-        animate_info = cls.animate_total_info(url='https://myself-bbs.com/thread-43773-1-1.html')
-
-        # 我要下載第一集，所以先拿出第一集的資料。
-        episode1_info = animate_info['video'][0]
-
-        # 拿 vpx 資料。
-        vpx_json = cls.get_vpx_json(url=episode1_info['url'])
-
-        # 整理 host 順序，我個人猜測 weight 越高的越好。
-        host = sorted(vpx_json['host'], key=lambda x: x.get('weight'), reverse=True)
-
-        # 將 weight 最高的 host 與 720p m3u8網址拿出來，組成完整 m3u8 網址。
-        m3u8_url = f"{host[0]['host']}{vpx_json['video']['720p']}"
-
-        # 取得 m3u8 的資料。
-        m3u8_data = cls.get_m3u8_text(url=m3u8_url)
-
-        # 使用 m3u8 套件讀取 m3u8 資料。
-        m3u8_obj = m3u8.loads(m3u8_data)
-
-        # 抓出 m3u8 的所有 url。
-        for m3u8_data in m3u8_obj.segments:
-            # 組成 ts 完整的 url 。
-            ts_url = f"{host[0]['host']}{vpx_json['video']['720p'].replace('720p.m3u8', m3u8_data.uri)}"
-
-            # 開始下載(這裡我就不使用 thread 下載了。)
-            video_content = cls.get_content(url=ts_url)
-            with open(m3u8_data.uri, 'wb') as f:
-                f.write(video_content)
-
-        # 下載完自己合併所有 ts 檔案。
-
-
-if __name__ == '__main__':
-    Myself.download_animate_simple_example()
+if __name__ == "__main__":
+    # print(Myself.animate_info_table("https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&cad=rja&uact=8&ved=2ahUKEwjCnunV_If6AhXNtVYBHes3A2wQFnoECDAQAQ&url=https%3A%2F%2Fmyself-bbs.com%2Fthread-46195-1-1.html&usg=AOvVaw0h_qp-4xn19xy26BEvjrKN"))
+    # print(Myself.animate_info_table("https://myself-bbs.com/thread-48691-1-1.html"))
+    # print(Myself.week_animate())
+    # open("test.json", mode="w").write(Json.dumps(Myself.finish_list()["2022"], indent=2))
+    pass

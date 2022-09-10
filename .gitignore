@@ -133,3 +133,8 @@ logs
 discord-logs
 web-logs
 *.test
+
+test/
+cache/
+temp/
+*.mp4
