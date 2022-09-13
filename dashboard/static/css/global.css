@@ -1,0 +1,42 @@
+@import url(https://fonts.googleapis.com/css2?family=Oooh+Baby);
+@import url(https://fonts.googleapis.com/css2?family=Noto+Sans+TC);
+@import url(https://fonts.googleapis.com/icon?family=Material+Icons);
+
+html,
+body {
+    font-size: 1em;
+    margin: 0px;
+    padding: 0px;
+    height: 100%;
+}
+
+#title {
+    height: 48px;
+    text-align: left;
+    color: rgb(255, 255, 255);
+    font-size: 2em;
+    margin: 12px 24px;
+}
+
+.font {
+    font-family: 'Oooh Baby', cursive;
+}
+
+.cfont {
+    font-family: 'Noto Sans TC', sans-serif;
+}
+
+#content {
+    height: 100%;;
+    background-color: rgb(31, 31, 31);
+    padding: 8px;
+    padding-top: 72px;
+    padding-left: 48px;
+    position:relative;
+}
+
+@media (max-aspect-ratio: 1/1) {
+    #content {
+        height: auto;
+    }
+}

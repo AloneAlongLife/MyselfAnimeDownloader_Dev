@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0">
+        <link rel="icon" href="../static/img/favicon.ico">
+        <link rel="stylesheet" href="../static/css/home.css">
+        <script src="../static/js/include-html.js"></script>
+        <script src="../static/js/side-bar.js"></script>
+        <script src="../static/js/home.js"></script>
+        <title>MyselfAnimeDownloader</title>
+    </head>
+    <body>
+        <div id="top-bar" include-html="top-bar.html"></div>
+        <div id="side-bar" include-html="side-bar.html"></div>
+        <div id="content">
+            <div class="table">
+                <div class="t_title">
+                    <p class="cfont">下載貯列 <b class="font">Download Queue</b></p>
+                </div>
+                <div class="queue">
+                    <!-- <div class="progress_bar">
+                        <div class="progress_title">
+                            <p class="cfont">test</p>
+                            <div class="empty"></div>
+                            <p class="present cfont">10%</p>
+                        </div>
+                        <div class="progress">
+                            <div class="in"></div>
+                        </div>
+                    </div> -->
+                </div>
+            </div>
+            <hr>
+            <div class="info">
+                <div class="t_title">
+                    <p class="cfont">設定 <b class="font">Setting</b></p>
+                </div>
+                <div class="info_content">
+                    <p class="info_title cfont">一般設定</p>
+                    <div class="info_card">
+                        <div class="info_item">
+                            <p class="cfont">以資料夾分類</p>
+                            <input type="checkbox">
+                        </div>
+                        <div class="info_item">
+                            <p class="cfont">自定義檔案名稱 : </p>
+                            <input class="l_input" type="text">
+                        </div>
+                        <div class="info_item">
+                            <p class="cfont">自定義資料夾名稱 : </p>
+                            <input class="l_input" type="text">
+                        </div>
+                        <div class="info_item">
+                            <p class="cfont">補零至第</p>
+                            <input class="c_input" type="text">
+                            <p class="cfont">位</p>
+                        </div>
+                    </div>
+                    <hr>
+                    <p class="info_title cfont">自動下載設定</p>
+                    <div class="info_card">
+                        <div class="info_item">
+                            <p class="cfont">檢查更新間隔 : </p>
+                            <input class="c_input" type="text">
+                            <p class="cfont">分鐘</p>
+                        </div>
+                        <div class="info_item">
+                            <p class="cfont">同時下載數量 : </p>
+                            <input class="c_input" type="text">
+                            <p class="cfont">部</p>
+                        </div>
+                        <div class="info_item">
+                            <p class="cfont">同時連接數量 : </p>
+                            <input class="c_input" type="text">
+                            <p class="cfont">個</p>
+                        </div>
+                        <div class="info_item">
+                            <p class="cfont">失敗重試次數 : </p>
+                            <input class="c_input" type="text">
+                            <p class="cfont">次</p>
+                        </div>
+                        <div class="info_item">
+                            <p class="cfont">下載模式 : </p>
+                            <select>
+                                <option>Test</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    <script>
+        includeHTML();
+        onload();
+    </script>
+</html>

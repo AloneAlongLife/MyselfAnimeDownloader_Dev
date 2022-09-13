@@ -1,0 +1,204 @@
+@import url(global.css);
+
+#content {
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
+}
+
+hr {
+    width: 0px;
+    height: 100%;
+    border-style: solid;
+    border-width: 1px;
+    border-color: rgb(44, 44, 44);
+    margin: 0px;
+}
+
+.table {
+    height: 100%;
+    flex: 1;
+    width: fit-content;
+    margin: 8px;
+    margin-right: 0px;
+    display: flex;
+    flex-direction: column;
+}
+
+.info {
+    flex: 1;
+    height: 100%;
+    width: 100%;
+    margin: 8px;
+}
+
+.t_title {
+    color: rgb(255, 255, 255);
+    font-size: 28px;
+    height: 37px;
+}
+.t_title p {
+    margin: 0px;
+    margin-left: 16px;
+}
+
+.info .info_content {
+    border-style: solid;
+    border-width: 1px;
+    border-color: rgb(44, 44, 44);
+    border-radius: 8px;
+    margin: 8px;
+    color: rgb(255, 255, 255);
+    padding: 4px 12px 12px 12px;
+}
+
+.info .info_content hr {
+    width: 100%;
+    height: 0px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: rgb(44, 44, 44);
+    margin: 4px 0px;
+}
+
+.table .queue {
+    flex: 1;
+    height: 70%;
+    margin: 8px;
+    margin-bottom: 16px;
+    overflow-y: auto;
+    border-style: solid;
+    border-width: 1px;
+    border-color: rgb(44, 44, 44);
+    border-radius: 8px;
+    /* display: flex; */
+}
+.table .progress_bar {
+    height: 48px;
+    margin: 8px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: rgb(77, 77, 77);
+    border-radius: 10px;
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    /* background-color: rgb(77, 77, 77); */
+    overflow: hidden;
+    /* justify-items: center; */
+}
+.table .progress_bar .progress_title {
+    display: flex;
+}
+.table .progress_title p{
+    margin: 4px;
+    margin-top: 0px;
+    padding: 0px;
+    padding-left: 8px;
+    color: rgb(255, 255, 255);
+    font-size: 20px;
+}
+.table .progress_title .empty{
+    width: 100%;
+}
+.table .progress_title .present{
+    margin-top: auto;
+    padding-right: 8px;
+    font-size: 14px;
+}
+.table .progress {
+    margin-left: 8px;
+    margin-right: 8px;
+    height: 6px;
+    border-radius: 4px;
+    border-style: solid;
+    border-color: rgb(77, 77, 77);
+    border-width: 1px;
+    background-color: rgb(31, 31, 31);
+    position: relative;
+    overflow: visible;
+}
+.table .progress .in {
+    position: absolute;
+    width: 50%;
+    height: 6px;
+    border-radius: 3px;
+    left: 0px;
+    top: 0px;
+    max-width: 100%;
+    background-color: rgb(255, 95, 0);
+    box-sizing: border-box;
+    transition: 0.5s;
+}
+
+.info .info_title {
+    font-size: 24px;
+    margin: 4px;
+}
+.info .info_card {
+    margin: 0px;
+}
+
+.info .info_card p {
+    font-size: 18px;
+    margin: 4px;
+    /* color: rgb(160, 160, 160); */
+}
+.info .info_card .info_item {
+    display: flex;
+    flex-direction: row;
+    margin-left: 0px;
+}
+.info .info_card .info_item input {
+    width: 50px;
+    height: 20px;
+    font-size: 18px;
+    margin: 4px;
+    margin-top: 6px;
+    margin-bottom: 2px;
+    border-style: none;
+    border-bottom-style: solid;
+    border-width: 1px;
+    border-color: rgb(77, 77, 77);
+    background-color: transparent;
+    color: rgb(255, 255, 255);
+}
+.info .info_card .info_item .l_input {
+    width: 240px;
+}
+.info .info_card .info_item .c_input {
+    text-align: right;
+}
+.info .info_card .info_item .c_input:focus {
+    text-align: left;
+}
+.info .info_card .info_item select {
+    width: 80px;
+    height: 24px;
+    font-size: 18px;
+    margin: 4px;
+    margin-top: 6px;
+    margin-bottom: 0px;
+    border-style: none;
+    border-bottom-style: solid;
+    border-width: 1px;
+    border-color: rgb(77, 77, 77);
+    background-color: transparent;
+    color: rgb(255, 255, 255);
+}
+
+@media (max-aspect-ratio: 1/1) {
+    #content {
+        flex-direction: column;
+        flex-flow: column-reverse;
+    }
+
+    hr {
+        width: 100%;
+        height: 0px;
+        border-style: solid;
+        border-width: 1px;
+        border-color: rgb(44, 44, 44);
+        margin: 0px;
+    }
+}

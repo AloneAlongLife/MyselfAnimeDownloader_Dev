@@ -1,5 +1,4 @@
 beautifulsoup4
-m3u8
 requests
 flask
 orjson

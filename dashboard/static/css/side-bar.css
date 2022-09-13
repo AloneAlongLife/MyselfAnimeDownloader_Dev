@@ -1,0 +1,117 @@
+@import url(global.css);
+
+#side-bar {
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 48px;
+    background-color: transparent;
+    z-index: 1;
+}
+
+#side-bar:hover {
+    background-color: rgb(40, 40, 40, 0.7);
+}
+
+#side-bar .side-background {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    left: 100%;
+    top: 50%;
+    width: 100px;
+    height: 100%;
+    transform: translateY(-50%);
+    visibility: hidden;
+    background-color: rgb(40, 40, 40, 0.7);
+}
+
+#side-bar .menu {
+    display: none;
+}
+
+#side-bar .side-bar-empty {
+    flex: 1;
+}
+
+#side-bar button {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    background-color: transparent;
+    border-color: transparent;
+    border-width: 0px;
+    border-left-width: 3px;
+    border-left-style: solid;
+    height: 48px;
+    width: 100%;
+    cursor: pointer;
+}
+#side-bar button .side-icon {
+    display: flex;
+    color: rgb(169, 169, 169);
+    align-items: center;
+    padding: auto;
+    width: 100%;
+    height: 100%;
+    /* font-size: 2em; */
+    cursor: pointer;
+}
+#side-bar button .side-icon p {
+    text-align: center;
+    width: 100%;
+}
+
+#side-bar button .side-label {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    left: 100%;
+    top: 50%;
+    width: 100px;
+    height: 100%;
+    transform: translateY(-50%);
+    visibility: hidden;
+    background-color: rgb(31, 31, 31, 0.7);
+}
+#side-bar button .side-label p {
+    width: inherit;
+    text-align: center;
+    transform: translateX(-12px);
+    margin: auto;
+    flex: 1;
+    font-size: 1.5em;
+    color: rgb(169, 169, 169);
+}
+
+@media (max-aspect-ratio: 1/1) {
+    #side-bar {
+        z-index: 2;
+    }
+
+    #side-bar:hover {
+        background-color: initial;
+    }
+
+    #side-bar .menu {
+        display: block;
+        height: 32px;
+        margin: 16px;
+    }
+
+    #side-bar .side-background,
+    #side-bar button .side-label {
+        width: 100vw;
+    }
+
+    #side-bar button {
+        border-left-width: 0px;
+    }
+}

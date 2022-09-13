@@ -9,11 +9,13 @@ from requests import RequestException, get
 from requests.models import Response
 
 from modules import Thread
+from modules import Config
 
-logger = getLogger("MySelf")
+logger = getLogger("main")
+download_exception = False
 
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.114 Safari/537.36 OPR/89.0.4447.64 (Edition GX-CN)",
+    "User-Agent": Config.myself_setting.url
 }
 
 class M3U8:
@@ -31,25 +33,31 @@ class M3U8:
 
     @staticmethod
     def _job(i, download_queue: Queue, progress: list, path: str) -> None:
+        global download_exception
         finish = 0
         while not download_queue.empty():
-            url: str = download_queue.get()
-            name = url.split("/")[-1]
-            res = get(url, stream=True)
-            total_length = int(res.headers.get('content-length'))
-            if isfile(f"{path}/{name}"):
-                if getsize(f"{path}/{name}") == total_length:
-                    finish += 1
-                    progress[i] = int(100 * finish)
-                    continue
-            with open(f"{path}/{name}", mode="wb") as video_file:
-                download_length = 0
-                for data in res.iter_content(40960):
-                    video_file.write(data)
-                    download_length += len(data)
-                    progress[i] = int(100 * finish + 100 * download_length / total_length)
-            finish += 1
-            progress[i] = int(100 * finish)
+            try:
+                url: str = download_queue.get()
+                name = url.split("/")[-1]
+                res = get(url, stream=True)
+                total_length = int(res.headers.get('content-length'))
+                if isfile(f"{path}/{name}"):
+                    if getsize(f"{path}/{name}") == total_length:
+                        finish += 1
+                        progress[i] = int(100 * finish)
+                        continue
+                with open(f"{path}/{name}", mode="wb") as video_file:
+                    download_length = 0
+                    for data in res.iter_content(40960):
+                        video_file.write(data)
+                        download_length += len(data)
+                        progress[i] = int(100 * finish + 100 * download_length / total_length)
+                finish += 1
+                progress[i] = int(100 * finish)
+            except RequestException as e:
+                logger.error(f"Request Error: {e}")
+                download_exception = True
+                return
 
     @classmethod
     def _get_m3u8_url(self, url: str) -> str:
@@ -65,15 +73,23 @@ class M3U8:
         hosts = sorted(vpx_json["host"], key=lambda x: x.get("weight"), reverse=True) # 將主機依權重排序
         return f"{hosts[0]['host']}{vpx_json['video']['720p']}" # 組合網址
 
-    def download(self, url: str, out_path: str="", name: str="", thread_number: int=6) -> None:
+    def download(self, url: str, out_path: str="", name: str="", thread_number: int=6) -> bool:
         """
         下載影片
 
         url: :class:`str`
             網址。
+        out_path: :class:`str`
+            輸出路徑。
+        name: :class:`str`
+            輸出檔案名稱。
+        thread_number: :class:`int`
+            線程數。
 
-        return: :class:`str`
+        return: :class:`bool`
+            是否下載成功。
         """
+        global download_exception
         download_queue = Queue()
         progress = []
         thread_list = []
@@ -94,20 +110,27 @@ class M3U8:
                 open(f"{temp_path}/ffmpeg_in", mode="a").write(f"file '{file_name}'\n")
                 download_queue.put(f"{host_url}/{file_name}")
                 total_block += 1
+
+        download_exception = False
         for i in range(thread_number):
             progress.append(0)
             thread_list.append(Thread(target=self._job, args=(i, download_queue, progress, temp_path)))
             thread_list[-1].start()
 
         temp_progress = sum(progress)
-        while temp_progress < 100 * total_block: # 更改進度
+        while temp_progress < 100 * total_block and download_exception == False: # 更改進度
             temp_progress = sum(progress)
             self.progress = temp_progress / total_block
-
-        for thread in thread_list:
-            thread.join()
-        
-        run(f"ffmpeg -f concat -i \"{temp_path}/ffmpeg_in\" -c copy \"" + join(out_path, name) + ".mp4\"", shell=False, stdout=DEVNULL, stderr=DEVNULL)
+        if download_exception == False:
+            for thread in thread_list:
+                thread.stop()
+                thread.join()
+            return False
+        else:
+            for thread in thread_list:
+                thread.join()
+            run(f"ffmpeg -f concat -i \"{temp_path}/ffmpeg_in\" -c copy \"" + join(out_path, name) + ".mp4\"", shell=False, stdout=DEVNULL, stderr=DEVNULL)
+            return True
     
 if __name__ == "__main__":
     M3U8().download("https://v.myself-bbs.com/vpx/48642/001", name="test")

@@ -9,18 +9,20 @@ from bs4.element import Tag
 from requests import get
 from requests.exceptions import RequestException, Timeout
 
-logger = getLogger("MySelf")
+from modules import Config
+
+logger = getLogger("main")
 
 # 資料節不可包含之字元:\/:*?"<>|
 BAN = "\\/:*?\"<>|"
 # 替代用字元
 REPLACE = "_"
 # 網址
-URL = "https://myself-bbs.com"
+URL = Config.myself_setting.url
 
 # 偽裝瀏覽器
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.114 Safari/537.36 OPR/89.0.4447.64 (Edition GX-CN)",
+    "User-Agent": Config.myself_setting.user_agent
 }
 
 # 動漫資訊的 Key 對照表
