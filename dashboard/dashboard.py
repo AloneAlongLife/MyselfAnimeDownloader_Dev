@@ -31,6 +31,14 @@ class Dashboard():
     def home():
         return render_template("home.html")
 
+    @app.route("/info")
+    def info():
+        return render_template("info.html")
+
+    @app.route("/data")
+    def data():
+        return render_template("data.html")
+
     @app.route("/api/v1.0/<data>")
     def api(data: str):
         if data == "queue":
