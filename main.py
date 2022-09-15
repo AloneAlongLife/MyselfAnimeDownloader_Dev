@@ -24,6 +24,5 @@ if __name__ == "__main__":
     flask_thread = Thread(target=dashboard.run)
     flask_thread.start()
 
-    while True:
-        pass
+    flask_thread.join()
     

@@ -25,7 +25,7 @@ class Dashboard():
         request_type = request.headers.get("Request-type")
         if request_type != None:
             return _deal_requeste(request_type, request.get_data(), request)
-        return redirect(url_for("home"))
+        return render_template("index.html")
     
     @app.route("/home")
     def home():

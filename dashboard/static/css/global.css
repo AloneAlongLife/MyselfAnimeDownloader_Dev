@@ -8,6 +8,8 @@ body {
     margin: 0px;
     padding: 0px;
     height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 #title {
@@ -26,17 +28,21 @@ body {
     font-family: 'Noto Sans TC', sans-serif;
 }
 
-#content {
-    height: 100%;;
+.content {
+    position: absolute;
     background-color: rgb(31, 31, 31);
+    height: calc(100% - 80px);
+    width: calc(100% - 56px);
     padding: 8px;
     padding-top: 72px;
     padding-left: 48px;
-    position:relative;
 }
 
 @media (max-aspect-ratio: 1/1) {
-    #content {
+    /* #content {
         height: auto;
+    } */
+    .content {
+        height: calc(100% + 72px);
     }
 }

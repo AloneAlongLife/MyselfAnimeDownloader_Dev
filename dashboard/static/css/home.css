@@ -1,22 +1,21 @@
-@import url(global.css);
-
-#content {
+#home {
     display: flex;
     flex-direction: row;
     overflow: hidden;
+    overflow-y: auto;
 }
 
-hr {
+#home hr {
     width: 0px;
-    height: 100%;
+    height: calc(100% - 2px);
     border-style: solid;
     border-width: 1px;
     border-color: rgb(44, 44, 44);
     margin: 0px;
 }
 
-.table {
-    height: 100%;
+#home .table {
+    height: calc(100% - 16px);
     flex: 1;
     width: fit-content;
     margin: 8px;
@@ -25,24 +24,24 @@ hr {
     flex-direction: column;
 }
 
-.info {
+#home .info {
     flex: 1;
-    height: 100%;
+    height: calc(100% - 16px);
     width: 100%;
     margin: 8px;
 }
 
-.t_title {
+#home .t_title {
     color: rgb(255, 255, 255);
     font-size: 28px;
     height: 37px;
 }
-.t_title p {
+#home .t_title p {
     margin: 0px;
     margin-left: 16px;
 }
 
-.info .info_content {
+#home .info .info_content {
     border-style: solid;
     border-width: 1px;
     border-color: rgb(44, 44, 44);
@@ -52,7 +51,7 @@ hr {
     padding: 4px 12px 12px 12px;
 }
 
-.info .info_content hr {
+#home .info .info_content hr {
     width: 100%;
     height: 0px;
     border-style: solid;
@@ -61,7 +60,7 @@ hr {
     margin: 4px 0px;
 }
 
-.table .queue {
+#home .table .queue {
     flex: 1;
     height: 70%;
     margin: 8px;
@@ -73,7 +72,7 @@ hr {
     border-radius: 8px;
     /* display: flex; */
 }
-.table .progress_bar {
+#home .table .progress_bar {
     height: 48px;
     margin: 8px;
     border-style: solid;
@@ -87,10 +86,10 @@ hr {
     overflow: hidden;
     /* justify-items: center; */
 }
-.table .progress_bar .progress_title {
+#home .table .progress_bar .progress_title {
     display: flex;
 }
-.table .progress_title p{
+#home .table .progress_title p{
     margin: 4px;
     margin-top: 0px;
     padding: 0px;
@@ -98,15 +97,15 @@ hr {
     color: rgb(255, 255, 255);
     font-size: 20px;
 }
-.table .progress_title .empty{
+#home .table .progress_title .empty{
     width: 100%;
 }
-.table .progress_title .present{
+#home .table .progress_title .present{
     margin-top: auto;
     padding-right: 8px;
     font-size: 14px;
 }
-.table .progress {
+#home .table .progress {
     margin-left: 8px;
     margin-right: 8px;
     height: 6px;
@@ -118,7 +117,7 @@ hr {
     position: relative;
     overflow: visible;
 }
-.table .progress .in {
+#home .table .progress .in {
     position: absolute;
     width: 50%;
     height: 6px;
@@ -131,25 +130,25 @@ hr {
     transition: 0.5s;
 }
 
-.info .info_title {
+#home .info .info_title {
     font-size: 24px;
     margin: 4px;
 }
-.info .info_card {
+#home .info .info_card {
     margin: 0px;
 }
 
-.info .info_card p {
+#home .info .info_card p {
     font-size: 18px;
     margin: 4px;
     /* color: rgb(160, 160, 160); */
 }
-.info .info_card .info_item {
+#home .info .info_card .info_item {
     display: flex;
     flex-direction: row;
     margin-left: 0px;
 }
-.info .info_card .info_item input {
+#home .info .info_card .info_item input {
     width: 50px;
     height: 20px;
     font-size: 18px;
@@ -163,16 +162,57 @@ hr {
     background-color: transparent;
     color: rgb(255, 255, 255);
 }
-.info .info_card .info_item .l_input {
+#home .info .info_card .info_item input[type="checkbox"] {
+    appearance: none;
+    position: relative;
+    outline: none;
+    width: 42px;
+    height: 24px;
+    border-style: none;
+    border-radius: 12px;
+    margin-top: auto;
+    margin-bottom: auto;
+    background-color: rgb(77, 77, 77);
+    box-shadow: inset 0 0 10px rgb(31, 31, 31);
+    transition: 0.3s;
+    cursor: pointer;
+}
+#home .info .info_card .info_item input[type="checkbox"]::before {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    height: 20px;
+    width: 20px;
+    border-radius: 10px;
+    background-color: rgb(255, 255, 255);
+    box-shadow: inset 0 0 3px rgb(77, 77, 77);
+    transition: 0.3s;
+}
+#home .info .info_card .info_item input[type="checkbox"]:checked {
+    background-color: rgb(255, 255, 255);
+    box-shadow: inset 0 0 5px rgb(77, 77, 77);
+}
+#home .info .info_card .info_item input[type="checkbox"]:checked::before {
+    left: 20px;
+    background-color: rgb(31, 31, 31);
+}
+#home .info .info_card .info_item .l_input {
     width: 240px;
 }
-.info .info_card .info_item .c_input {
+#home .info .info_card .info_item .c_input {
     text-align: right;
+    -moz-appearance: textfield;
 }
-.info .info_card .info_item .c_input:focus {
+#home .info .info_card .info_item .c_input:focus {
     text-align: left;
 }
-.info .info_card .info_item select {
+#home .info .info_card .info_item .c_input::-webkit-outer-spin-button,
+#home .info .info_card .info_item .c_input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+#home .info .info_card .info_item select {
     width: 80px;
     height: 24px;
     font-size: 18px;
@@ -186,19 +226,52 @@ hr {
     background-color: transparent;
     color: rgb(255, 255, 255);
 }
+#home .info .info_card .info_item select:hover {
+    color: rgb(0, 0, 0);
+}
+
+#home #submit_setting {
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 5px;
+    border-color: rgb(77, 77, 77);
+    margin: 4px;
+    margin-top: 8px;
+    color: rgb(255, 255, 255);
+    background-color: transparent;
+    height: 36px;
+    width: 64px;
+    font-size: 20px;
+    padding-bottom: 2px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+#home #submit_setting:hover {
+    color: rgb(31, 31, 31);
+    background-color: rgb(255, 255, 255);
+}
 
 @media (max-aspect-ratio: 1/1) {
-    #content {
+    #home {
         flex-direction: column;
         flex-flow: column-reverse;
     }
 
-    hr {
+    #home hr {
         width: 100%;
         height: 0px;
         border-style: solid;
         border-width: 1px;
         border-color: rgb(44, 44, 44);
         margin: 0px;
+    }
+
+    #home .table {
+        width: 100%;
+    }
+    
+    #home .info .info_card .long_item {
+        display: flex;
+        flex-direction: column;
     }
 }

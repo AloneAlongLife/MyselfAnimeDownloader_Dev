@@ -15,6 +15,7 @@
         "download_retry": 3,
         "customized_file_name": "",
         "customized_dir_name": "",
+        "download_path": "",
         "zerofile": 2
     },
     "other_setting": {

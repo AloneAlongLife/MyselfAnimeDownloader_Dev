@@ -2,7 +2,7 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function onload() {
+function home_onload() {
     update_queue();
     setInterval(update_queue, 3000);
     include_try();
@@ -56,4 +56,9 @@ async function update_queue() {
         document.querySelector(`#${id} > div.progress_title > p.present.cfont`).textContent = `${progress}%`;
         document.querySelector(`#${id} > div.progress > div`).style.width = `${progress}%`;
     }
+}
+
+function send_setting() {
+    xhttp = new XMLHttpRequest();
+    data
 }
