@@ -5,20 +5,7 @@ function sleep(ms) {
 function home_onload() {
     update_queue();
     setInterval(update_queue, 3000);
-    include_try();
-}
-
-async function include_try(){
-    let finish = false;
-    while (!finish) {
-        try {
-            document.getElementById('top_bar_search_box').onkeydown = function(e){if (e.key=='Enter'){console.log('Enter!!');}};
-            finish = true;
-        }
-        catch {
-            await sleep(1000);
-        }
-    }
+    get_setting();
 }
 
 function createElement(el, options={}){
@@ -59,6 +46,48 @@ async function update_queue() {
 }
 
 function send_setting() {
-    xhttp = new XMLHttpRequest();
-    data
+    let xhttp = new XMLHttpRequest();
+    let data = {}
+    let input_list = document.getElementById("setting_form").getElementsByTagName("input");
+    for (let i = 0; i < input_list.length; i++) {
+        let value = input_list[i].value;
+        if (value == "") {
+            value = null;
+        }
+        else if (input_list[i].type == "checkbox") {
+            value = input_list[i].checked;
+        }
+        data[input_list[i].name] = value;
+    }
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4) {
+            get_setting();
+        }
+    }
+    xhttp.open("POST", "/", true);
+    xhttp.setRequestHeader("Content-type", "application/json");
+    xhttp.setRequestHeader("Request-type", "send_setting_form");
+    xhttp.send(JSON.stringify(data));
+}
+
+function get_setting() {
+    let xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4) {
+            let data = JSON.parse(this.responseText);
+            let input_list = document.getElementById("setting_form").getElementsByTagName("input");
+            for (let i = 0; i < input_list.length; i++) {
+                if (input_list[i].type == "checkbox") {
+                    input_list[i].checked = data[input_list[i].name];
+                }
+                else {
+                    input_list[i].value = data[input_list[i].name];
+                }
+            }
+        }
+    }
+    xhttp.open("POST", "/", true);
+    xhttp.setRequestHeader("Content-type", "text");
+    xhttp.setRequestHeader("Request-type", "get_setting_form");
+    xhttp.send();
 }

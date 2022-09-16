@@ -1,17 +1,21 @@
-from datetime import timedelta as d_timedelta, timezone as d_timezone
 import logging
-from modules.json import Json
-from modules.threading import Thread
+from datetime import timedelta as d_timedelta
+from datetime import timezone as d_timezone
 from os.path import getmtime, isfile
+from threading import Lock
 from time import sleep
 from typing import Union
-from threading import current_thread
+
+from modules.json import Json
+from modules.threading import Thread
 
 logger = logging.getLogger("main")
 _FILE_PATH = "config.json"
 
 _CONFIG: dict
 modify_time = 0
+
+_auto_update_lock = Lock()
 
 def _gen_config():
     """
@@ -52,7 +56,11 @@ def __patch(example: dict, config: dict):
             config[key] = value
     return config
 
-class _Web_Console(dict):
+class _Str_Dict(dict):
+    def to_str(self):
+        return Json.dumps(self)
+
+class _Web_Console(_Str_Dict):
     host: str
     port: int
     debug: bool
@@ -63,7 +71,7 @@ class _Web_Console(dict):
         self.port = _config["port"]
         self.debug = _config["debug"]
 
-class _Other_Setting(dict):
+class _Other_Setting(_Str_Dict):
     time_zone: d_timezone
     log_level: str
     version: str
@@ -74,7 +82,7 @@ class _Other_Setting(dict):
         self.log_level = _config["log_level"]
         self.version = _config["version"]
 
-class _MySelf_Setting(dict):
+class _MySelf_Setting(_Str_Dict):
     url: str
     user_agent: str
     animate_classify: bool
@@ -85,6 +93,7 @@ class _MySelf_Setting(dict):
     download_retry: int
     customized_file_name: str
     customized_dir_name: str
+    download_path: str
     zerofile: int
     def __init__(self, _config: dict):
         for item in _config.items():
@@ -99,12 +108,13 @@ class _MySelf_Setting(dict):
         self.download_retry = _config["download_retry"]
         self.customized_file_name = _config["customized_file_name"]
         self.customized_dir_name = _config["customized_dir_name"]
+        self.download_path = _config["download_path"]
         self.zerofile = _config["zerofile"]
 
 class Config:
     web_console: _Web_Console
-    other_setting: _Other_Setting
     myself_setting: _MySelf_Setting
+    other_setting: _Other_Setting
     updated: bool = False
     readied: Union[bool, None] = None
 
@@ -119,8 +129,8 @@ class Config:
 
         self.config = _CONFIG.copy()
         self.web_console = _Web_Console(_CONFIG["web_console"])
-        self.other_setting = _Other_Setting(_CONFIG["other_setting"])
         self.myself_setting = _MySelf_Setting(_CONFIG["myself_setting"])
+        self.other_setting = _Other_Setting(_CONFIG["other_setting"])
         self.updated = True
 
     @classmethod
@@ -130,12 +140,14 @@ class Config:
     @classmethod
     def save(self):
         global modify_time
+        _auto_update_lock.acquire()
         data = {}
         data["web_console"] = self.web_console
-        data["other_setting"] = self.other_setting
         data["myself_setting"] = self.myself_setting
+        data["other_setting"] = self.other_setting
         Json.dump(_FILE_PATH, data)
         modify_time = getmtime(_FILE_PATH)
+        _auto_update_lock.release()
         Config.update()
 
 def auto_update():
@@ -152,9 +164,11 @@ def auto_update():
     Config._ready(True)
     while True:
         # 檢查設置檔修改時間
+        _auto_update_lock.acquire()
         if getmtime(_FILE_PATH) != modify_time:
             Config.update()
             modify_time = getmtime(_FILE_PATH)
+        _auto_update_lock.release()
         sleep(1)
 
 auto_update_thread = Thread(target=auto_update, name="Config_Auto_Update")

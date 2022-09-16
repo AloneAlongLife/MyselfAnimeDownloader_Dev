@@ -38,7 +38,7 @@ function includeHTML() {
                 else {element.innerHTML = this.responseText;}
             }
         }
-        xhttp.open("POST", "/", true);
+        xhttp.open("POST", window.location.pathname + window.location.search, true);
         xhttp.setRequestHeader("Content-type", "application/json");
         xhttp.setRequestHeader("Request-type", "include");
         xhttp.send(JSON.stringify(data));

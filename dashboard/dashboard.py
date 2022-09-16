@@ -11,8 +11,18 @@ def _deal_requeste(type_of: str, data: str | bytes, raw_requests: Request):
         logger.info(f"Get Request Type:{type_of}; Data:{data.decode('utf-8')}")
     except:
         logger.info(f"Get Request Type:{type_of}; Data:{data}")
-    if type_of == "include":
-        return render_template(Json.loads(data).get("file_name"))
+    try:
+        if type_of == "include":
+            return render_template(raw_requests.json.get("file_name"))
+        elif type_of == "send_setting_form":
+            for item in raw_requests.json.items():
+                if item[1] == None: continue
+                Config.myself_setting[item[0]] = type(Config.myself_setting.get(item[0], ""))(item[1])
+            Config.save()
+        elif type_of == "get_setting_form":
+            return Config.myself_setting.to_str()
+    except:
+        return ("", 404)
     return ("", 204)
 
 class Dashboard():
@@ -26,25 +36,13 @@ class Dashboard():
         if request_type != None:
             return _deal_requeste(request_type, request.get_data(), request)
         return render_template("index.html")
-    
-    @app.route("/home")
-    def home():
-        return render_template("home.html")
-
-    @app.route("/info")
-    def info():
-        return render_template("info.html")
-
-    @app.route("/data")
-    def data():
-        return render_template("data.html")
 
     @app.route("/api/v1.0/<data>")
     def api(data: str):
         if data == "queue":
             from random import randint
-            return [{"name": "test_1", "progress": randint(0, 100), "id": "abcd"}]
-        return ("", 204)
+            return [{"name": "test_1", "progress": randint(0, 100), "id": "abcd"}, {"name": "test_2", "progress": randint(0, 100), "id": "abce"}]
+        return ("", 404)
     
     def run(self):
         self.app.run(

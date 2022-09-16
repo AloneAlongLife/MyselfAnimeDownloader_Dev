@@ -24,5 +24,9 @@ if __name__ == "__main__":
     flask_thread = Thread(target=dashboard.run)
     flask_thread.start()
 
+    # while True:
+    #     print(Config.myself_setting.auto_download_thread)
+    #     sleep(1)
+
     flask_thread.join()
     

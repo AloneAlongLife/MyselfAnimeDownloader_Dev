@@ -216,7 +216,7 @@ class Myself:
             "2022": [
                 {"title": "2022年01月(冬)","data": [{"name": "失格紋的最強賢者", "url": "動漫網址"}, {...}]},
                 {"title": "2022年04月(春)", "data": [{...}]}.
-                {...},
+                {...}
             ]
         }
         """
@@ -242,6 +242,22 @@ class Myself:
             year_list.reverse()
             data[year_list[0]["title"].split("年")[0]] = year_list
         return data
+    
+    @classmethod
+    def search(self, keyword: str):
+        """
+        搜尋動漫。
+
+        return: :class:`list`
+        [
+            {"title": "OVERLORD 不死者之王 第四季","data": "動漫網址"},
+            {...}
+        ]
+        """
+        first_url = get(url=f"{URL}/search.php?mod=forum&srchtxt={keyword}&searchsubmit=yes").url
+        if res == None:
+            return []
+    #https://myself-bbs.com/search.php?mod=forum&srchtxt=異世界&searchsubmit=yes
 
 if __name__ == "__main__":
     # print(Myself.animate_info_table("https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&cad=rja&uact=8&ved=2ahUKEwjCnunV_If6AhXNtVYBHes3A2wQFnoECDAQAQ&url=https%3A%2F%2Fmyself-bbs.com%2Fthread-46195-1-1.html&usg=AOvVaw0h_qp-4xn19xy26BEvjrKN"))
