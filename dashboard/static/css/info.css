@@ -1,0 +1,69 @@
+/* #info {
+    overflow: hidden;
+} */
+
+#info .page {
+    position: absolute;
+    height: calc(100% - 72px);
+    width: calc(100% - 48px);
+    top: 72px;
+    left: 48px;
+}
+
+#info .loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+#info .ring_text {
+    width: 200px;
+    font-size: 36px;
+    position: absolute;
+    color: rgb(255, 255, 255);
+    animation: trans 2s linear infinite;
+}
+#info .ring {
+    width: 216px;
+    height: 216px;
+    transform: rotateZ(-90deg);
+    animation: ring_ani 4s linear infinite;
+}
+#info .ring circle{
+    position: absolute;
+    fill: none;
+    stroke-width: 8px;
+    stroke: rgb(255, 255, 255);
+    stroke-linecap: round;
+    stroke-dasharray: 628;
+    stroke-dashoffset: 628;
+    animation: ring_c_ani 4s linear infinite;
+}
+
+@keyframes ring_ani {
+    0%{
+        transform: rotateZ(-90deg);
+    }
+    50%{
+        transform: rotateZ(-270deg);
+    }
+    100%{
+        transform: rotateZ(-450deg);
+    }
+}
+@keyframes ring_c_ani {
+    0%{
+        stroke-dashoffset: 628;
+    }
+    50% {
+        stroke-dashoffset: 1256;
+    }
+    100% {
+        stroke-dashoffset: 1884;
+    }
+}
+@keyframes trans {
+    50%{
+        color: transparent;
+    }
+}

@@ -248,16 +248,30 @@ class Myself:
         """
         搜尋動漫。
 
+        keyword: :class:`str`
+            關鍵字。
+
         return: :class:`list`
         [
-            {"title": "OVERLORD 不死者之王 第四季","data": "動漫網址"},
+            {"title": "OVERLORD 不死者之王 第四季","url": "動漫網址"},
             {...}
         ]
         """
         first_url = get(url=f"{URL}/search.php?mod=forum&srchtxt={keyword}&searchsubmit=yes").url
+        res = self._req(first_url)
         if res == None:
             return []
-    #https://myself-bbs.com/search.php?mod=forum&srchtxt=異世界&searchsubmit=yes
+        result_pages: list[BeautifulSoup] = [BeautifulSoup(res, features="html.parser")]
+        result_num = int(result_pages[0].find("div", class_="sttl mbn").text[:-4].split(" ")[-1])
+        if result_num == 0: return []
+        data = []
+        page_num = result_num // 20 + 1
+        for i in range(2, page_num + 1):
+            result_pages.append(BeautifulSoup(self._req(f"{first_url}&page={i}"), features="html.parser"))
+        for result_page in result_pages:
+            for animate_element in result_page.find("div", id="threadlist").find_all("li"):
+                data.append({"title": animate_element.find("h3").text.replace("\n", "").lstrip(), "url": f"{URL}/thread-{animate_element['id']}-1-1.html"})
+        return data
 
 if __name__ == "__main__":
     # print(Myself.animate_info_table("https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&cad=rja&uact=8&ved=2ahUKEwjCnunV_If6AhXNtVYBHes3A2wQFnoECDAQAQ&url=https%3A%2F%2Fmyself-bbs.com%2Fthread-46195-1-1.html&usg=AOvVaw0h_qp-4xn19xy26BEvjrKN"))

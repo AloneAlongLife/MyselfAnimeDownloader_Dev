@@ -40,8 +40,9 @@ class Dashboard():
     @app.route("/api/v1.0/<data>")
     def api(data: str):
         if data == "queue":
-            from random import randint
-            return [{"name": "test_1", "progress": randint(0, 100), "id": "abcd"}, {"name": "test_2", "progress": randint(0, 100), "id": "abce"}]
+            # from random import randint
+            # return [{"name": "test_1", "progress": randint(0, 100), "id": "abcd"}, {"name": "test_2", "progress": randint(0, 100), "id": "abce"}]
+            return []
         return ("", 404)
     
     def run(self):
