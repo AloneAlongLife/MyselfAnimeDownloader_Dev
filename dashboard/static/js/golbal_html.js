@@ -1,17 +1,16 @@
 const _ID_LIST = ["name", "animate_type", "premiere_date", "author", "official_website", "remarks", "synopsis"]
 
-function show_page(page) {
+function show_page(page_name) {
     let page_list = document.querySelectorAll("#info > div.page");
     for (let i = 0; i < page_list.length; i++) {
         let page = page_list[i];
-        if (page.className.includes(page)) {
+        if (page.className.includes(page_name)) {
             page.style["display"] = "";
         }
         else {
             page.style["display"] = "none";
         }
     }
-    document.querySelector("#info > div.page." + page).style.display = "";
 }
 
 function createElement(el, options={}){
@@ -25,13 +24,14 @@ function createElement(el, options={}){
 function search_keydown(element, e) {
     if (e.key=='Enter') {
         if (element.value == "") {return;}
+        show_page("loading");
         window.location.hash = "#info"
         send_keyword(element.value);
+        element.value = "";
     }
 }
 
 function send_keyword(keyword) {
-    show_page("loading");
     let xhttp = new XMLHttpRequest();
     let data = {
         "keyword": keyword
@@ -56,13 +56,26 @@ function send_keyword(keyword) {
                 }
                 else {
                     let results = document.getElementById("search_results");
+                    results.innerHTML = "";
                     for (let i = 0; i < animate_data.length; i++) {
                         let result_box = createElement("div", {className: "result_box"});
                         let raw_title = animate_data[i]["title"];
-                        let title_1 = raw_titl
                         let url = animate_data[i]["url"];
-                        result_box.appendChild(createElement("p", {className: "cfont", textContent: }));
+                        let index = raw_title.indexOf("【");
+                        if (index != -1) {
+                            result_box.appendChild(createElement("p", {className: "cfont", textContent: raw_title.slice(0, index)}));
+                            result_box.appendChild(createElement("p", {className: "cfont", textContent: raw_title.slice(index)}));
+                        }
+                        else {
+                            result_box.appendChild(createElement("p", {className: "cfont", textContent: raw_title}));
+                        }
+                        result_box.onclick = function() {
+                            show_page("loading");
+                            send_keyword(url);
+                        };
+                        results.appendChild(result_box);
                     }
+                    show_page("results");
                 }
             }
             catch {
