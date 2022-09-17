@@ -1,6 +1,8 @@
-import threading, ctypes
-from time import sleep
+import ctypes
+import threading
 from os import system
+from time import sleep
+
 class Thread(threading.Thread):
     """
     可停止式線程。

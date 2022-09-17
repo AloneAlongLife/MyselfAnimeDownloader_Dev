@@ -1,12 +1,63 @@
-<div class="page loading">
+<div class="page search" style="display: none;">
+    <div class="material-icons search_text"><p>search</p></div>
+    <input autocomplete="off" class="search_box cfont" id="top_bar_search_box" type="text" placeholder=" 搜尋名稱或網址..." onkeydown="search_keydown(this, event)">
+</div>
+<div class="page loading" style="display: none;">
     <div class="ring_text font">Loading...</div>
     <svg class="ring">
         <circle cx="108px" cy="108px" r="100px"></circle>
     </svg>
 </div>
-<div class="page">
-
+<div class="page data" style="display: none;">
+    <div class="block left_block">
+        <div class="info_block">
+            <div class="img_block">
+                <p class="cfont info_title">封面圖片</p>
+                <img id="info_img" src="/cache/img?url=https%3A%2F%2Fmyself-bbs.com%2Fdata%2Fattachment%2Fforum%2F202010%2F11%2F1314529sq2sy7gzmqqd7m2.jpg">
+            </div>
+            <hr>
+            <div class="intro_block">
+                <p class="cfont info_title">作品資料</p>
+                <div class="info_box">
+                    <p class="cfont info_text">名稱 :</p>
+                    <p id="info_name" class="cfont info_text"></p>
+                </div>
+                <div class="info_box">
+                    <p class="cfont info_text">作品類型 :</p>
+                    <p id="info_animate_type" class="cfont info_text"></p>
+                </div>
+                <div class="info_box">
+                    <p class="cfont info_text">首播日期 :</p>
+                    <p id="info_premiere_date" class="cfont info_text"></p>
+                </div>
+                <div class="info_box">
+                    <p class="cfont info_text">原著作者 :</p>
+                    <p id="info_author" class="cfont info_text"></p>
+                </div>
+                <div class="info_box">
+                    <p class="cfont info_text">官方網站 :</p>
+                    <a id="info_official_website" class="cfont info_text" target="_blank"></a>
+                </div>
+                <div class="info_box">
+                    <p class="cfont info_text">備註 :</p>
+                    <p id="info_remarks" class="cfont info_text"></p>
+                </div>                
+            </div>
+        </div>
+        <hr class="row_hr">
+        <div class="des_block">
+            <p class="cfont info_title">劇情簡介</p>
+            <p id="info_synopsis" class="cfont des_text"></p>
+        </div>
+    </div>
+    <hr>
+    <div class="block right_block">
+        <div>Test</div>
+    </div>
 </div>
-<div class="page">
-
+<div class="page results" id="search_results">
+    <div class="cfont result_box">
+        <p class="cfont">異世界迷宮裡的後宮生活</p>
+        <p class="cfont">異世</p>
+    </div>
 </div>

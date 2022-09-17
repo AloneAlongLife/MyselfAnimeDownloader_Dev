@@ -20,12 +20,14 @@
 #top-bar img {
     margin-left: 12px;
     width: 40px;
+    cursor: pointer;
 }
 
 #top-bar .top-bar-title {
     margin-left: 10px;
     font-size: 1.5em;
     color: rgb(255, 255, 255);
+    cursor: pointer;
 }
 
 #top-bar .top-bar-empty-2 {

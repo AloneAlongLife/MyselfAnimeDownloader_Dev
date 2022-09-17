@@ -8,6 +8,8 @@ from time import sleep
 set_logging()
 logger = logging.getLogger("main")
 
+DEV_TEST = False
+
 # 檢查設置檔。
 while Config.readied == None: sleep(1)
 # if Config.readied == False:
@@ -15,6 +17,12 @@ while Config.readied == None: sleep(1)
 #     exit()
 
 if __name__ == "__main__":
+    if DEV_TEST:
+        from modules import Myself
+        # print(Myself.animate_info_table("https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&cad=rja&uact=8&ved=2ahUKEwjCnunV_If6AhXNtVYBHes3A2wQFnoECDAQAQ&url=https%3A%2F%2Fmyself-bbs.com%2Fthread-46195-1-1.html&usg=AOvVaw0h_qp-4xn19xy26BEvjrKN"))
+        # print(Myself.week_animate())
+        print(len(Myself.search("異世界")))
+        exit()
     logger.info(f"Version: {Config.other_setting.version}")
 
     if not isdir("cache"): makedirs("cache") # 存放網頁資料

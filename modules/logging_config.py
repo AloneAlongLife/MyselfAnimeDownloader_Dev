@@ -1,11 +1,13 @@
-from datetime import time
 import logging
+from datetime import time
 from logging.config import dictConfig
-from modules.config import Config
-from modules.datetime import My_Datetime
 from os import mkdir
 from os.path import isdir
 from time import sleep
+
+from modules.config import Config
+from modules.datetime import My_Datetime
+
 
 class DatetimeFormatter(logging.Formatter):
     def format(self, record):

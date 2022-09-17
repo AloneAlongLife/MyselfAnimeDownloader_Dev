@@ -8,8 +8,7 @@ from typing import Union
 from requests import RequestException, get
 from requests.models import Response
 
-from modules import Thread
-from modules import Config
+from modules import Config, Thread
 
 logger = getLogger("main")
 download_exception = False
@@ -18,18 +17,18 @@ HEADERS = {
     "User-Agent": Config.myself_setting.url
 }
 
+def _req(url: str, timeout: int=5) -> Union[Response, None]:
+    try:
+        r = get(url=url, headers=HEADERS, timeout=timeout)
+        if r and r.ok:
+            return r
+        return None
+    except RequestException as e:
+        logger.error(f"Request Error: {e}")
+        return None
+
 class M3U8:
     progress = 0
-    @staticmethod
-    def _req(url: str, timeout: int=5) -> Union[Response, None]:
-        try:
-            r = get(url=url, headers=HEADERS, timeout=timeout)
-            if r and r.ok:
-                return r
-            return None
-        except RequestException as e:
-            logger.error(f"Request Error: {e}")
-            return None
 
     @staticmethod
     def _job(i, download_queue: Queue, progress: list, path: str) -> None:
@@ -59,8 +58,8 @@ class M3U8:
                 download_exception = True
                 return
 
-    @classmethod
-    def _get_m3u8_url(self, url: str) -> str:
+    @staticmethod
+    def _get_m3u8_url(url: str) -> str:
         """
         取得檔案位置
 
@@ -69,7 +68,7 @@ class M3U8:
 
         return: :class:`str`
         """
-        vpx_json = self._req(url).json() # 取得檔案網址
+        vpx_json = _req(url).json() # 取得檔案網址
         hosts = sorted(vpx_json["host"], key=lambda x: x.get("weight"), reverse=True) # 將主機依權重排序
         return f"{hosts[0]['host']}{vpx_json['video']['720p']}" # 組合網址
 
@@ -129,7 +128,7 @@ class M3U8:
         else:
             for thread in thread_list:
                 thread.join()
-            run(f"ffmpeg -f concat -i \"{temp_path}/ffmpeg_in\" -c copy \"" + join(out_path, name) + ".mp4\"", shell=False, stdout=DEVNULL, stderr=DEVNULL)
+            run(f"ffmpeg -v error -f concat -i \"{temp_path}/ffmpeg_in\" -c copy -y \"" + join(out_path, name) + ".mp4\"", shell=False, stdout=DEVNULL, stderr=DEVNULL)
             return True
     
 if __name__ == "__main__":

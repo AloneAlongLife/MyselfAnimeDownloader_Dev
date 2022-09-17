@@ -1,7 +1,5 @@
 from logging import getLogger
-from os import makedirs
-from os.path import isdir, isfile
-from typing import Union
+from typing import Optional
 from urllib.parse import unquote
 
 from bs4 import BeautifulSoup
@@ -9,7 +7,7 @@ from bs4.element import Tag
 from requests import get
 from requests.exceptions import RequestException, Timeout
 
-from modules import Config
+from modules import Cache, Config
 
 logger = getLogger("main")
 
@@ -19,11 +17,6 @@ BAN = "\\/:*?\"<>|"
 REPLACE = "_"
 # 網址
 URL = Config.myself_setting.url
-
-# 偽裝瀏覽器
-HEADERS = {
-    "User-Agent": Config.myself_setting.user_agent
-}
 
 # 動漫資訊的 Key 對照表
 ANIMATE_TABLE = {
@@ -39,7 +32,7 @@ ANIMATE_TABLE = {
 HF_CONVERT = [("（", "("), ("）", ")")]
 
 
-def retouch_name(name: str) -> str:
+def _retouch_name(name: str) -> str:
     """
     避免不正當名字出現導致資料夾或檔案無法創建。
     :param name: str 名字。
@@ -48,76 +41,14 @@ def retouch_name(name: str) -> str:
     for char in BAN: name = name.replace(char, REPLACE)
     return name
 
-def retouch_url(name: str) -> str:
-    """
-    避免不正當名字出現導致資料夾或檔案無法創建。
-    :param name: str 名字。
-    :return: str
-    """
-    for char in BAN:
-        if char == "/":
-            continue
-        name = name.replace(char, REPLACE)
-    return name
-
+def _google_search_redirect(url: str) -> Optional[str]:
+    if "www.google.com/url?" in url:
+        url = unquote(url.split("url=")[1].split("&")[0])
+    return url
 
 class Myself:
     @staticmethod
-    def _req(url: str, timeout: int=5) -> Union[str, None]:
-        try:
-            r = get(url=url, headers=HEADERS, timeout=timeout)
-            if r and r.ok:
-                if URL in url:
-                    file = url.replace(URL, "cache")
-                else:
-                    url = url.replace("://", "").split("/")
-                    url[0] = "cache"
-                    file = "/".join(url)
-                file = retouch_url(file)
-                path = "/".join(file.split("/")[:-1])
-                if not isdir(path): makedirs(path)
-                with open(file, mode="wb") as save_file: save_file.write(r.content)
-                return r.content.decode("utf-8")
-            return None
-        except Timeout:
-            file = url.replace(URL, "cache")
-            file = retouch_url(file)
-            if not isfile(file): return None
-            logger.error(f"Request Timeout.")
-            with open(file, mode="rb") as cache_file: return cache_file.read().decode("utf-8")
-        except RequestException as e:
-            logger.error(f"Request Error: {e}")
-            return None
-    
-    @staticmethod
-    def _save_to_cache(url: str, timeout: int=5) -> None:
-        try:
-            if URL in url:
-                file = url.replace(URL, "cache")
-            else:
-                url = url.replace("://", "").split("/")
-                url[0] = "cache"
-                file = "/".join(url)
-            file = retouch_url(file)
-            path = "/".join(file.split("/")[:-1])
-            if isfile(file): return None
-            if not isdir(path): makedirs(path)
-            r = get(url=url, headers=HEADERS, timeout=timeout)
-            with open(file, mode="wb") as save_file: save_file.write(r.content)
-            return None
-        except RequestException as e:
-            logger.error(f"Request Error: {e}")
-            return None
-
-    @staticmethod
-    def _url_to_html(url: str, timeout: int=5) -> Union[str, None]:
-        if url == None or url == "": return None
-        if "!DOCTYPE html" in url: return url
-        if "www.google.com/url?" in url: url = unquote(url.split("url=")[1].split("&")[0])
-        return Myself._req(url, timeout)
-
-    @classmethod
-    def week_animate(self) -> list:
+    def week_animate(read_from_cache: bool=True) -> list:
         """
         爬首頁的每週更新表。
         (index 0 對應星期一)
@@ -136,15 +67,13 @@ class Myself:
             [...]
         ]
         """
-        res = self._req(url=f"{URL}/portal.php")
-        if res == None:
-            return []
+        res = Cache.cahce_requests(url=f"{URL}/portal.php", read_from_cache=read_from_cache)
+        if res == None: return []
         week_data = []
-        week_elements: list[Tag] = BeautifulSoup(res, features="html.parser").find("div", id="tabSuCvYn").find_all("div", class_="module cl xl xl1")
+        week_elements: list[Tag] = BeautifulSoup(res, features="html.parser").select("#tabSuCvYn div.module.cl.xl.xl1")
         for day_element in week_elements:
             day_data = []
             for element in day_element.find_all("li"):
-                print(element)
                 _a: Tag = element.find("a")
                 _fonts: list[Tag] = element.find_all("font")
                 day_data.append(
@@ -158,13 +87,13 @@ class Myself:
             week_data.append(day_data)
         return week_data
 
-    @classmethod
-    def animate_info_table(self, res: str) -> Union[dict, None]:
+    @staticmethod
+    def animate_info_table(url: str, read_from_cache: bool=True) -> Optional[dict]:
         """
         取得動漫資訊
 
         res: :class:`str`
-            網頁或網址。
+            網址。
 
         return: :class:`dict`
         {
@@ -180,24 +109,26 @@ class Myself:
             episode_data: [{name: 集數, url: 網址},{...}]
         }
         """
-        res = self._url_to_html(res)
+        url = _google_search_redirect(url)
+        if URL not in url: return None
+        res = Cache.cahce_requests(url, read_from_cache=read_from_cache)
         if res == None: return None
         # 一般信息
         data = {}
         res: BeautifulSoup = BeautifulSoup(res, features="html.parser")
-        all_info: list[Tag] = res.find("div", class_="info_info").find_all("li")
+        all_info: list[Tag] = res.select("div.info_info li")
         for info in all_info:
             key, value = info.text.split(": ")
             data[ANIMATE_TABLE[key]] = value
-        img_src = res.find("div", class_="info_img_box").find("img").get("src")
-        self._save_to_cache(img_src)
+        img_src = res.select_one("div.info_img_box img").get("src")
+        Cache.url_to_cahce(img_src)
         data["name"] = res.find("title").text.split("【")[0]
         data["image"] = img_src
         data["synopsis"] = res.find("div", id="info_introduction_text").text
         # 影片資料
         _REPLACE_LIST = [("player/play", "vpx"), ("\r", ""), ("\n", "")]
         episode_data = []
-        all_episodes: list[Tag] = res.find("ul", class_="main_list").select("a[href=\"javascript:;\"]")
+        all_episodes: list[Tag] = res.select("ul.main_list a[href=\"javascript:;\"]")
         for episode in all_episodes:
             name = episode.text
             data_url = episode.find_next("a").get("data-href")
@@ -206,8 +137,8 @@ class Myself:
         data["episode_data"] = episode_data
         return data
 
-    @classmethod
-    def finish_list(self) -> dict:
+    @staticmethod
+    def finish_list(read_from_cache: bool=True) -> dict:
         """
         取得完結列表頁面的動漫資訊。
 
@@ -220,9 +151,8 @@ class Myself:
             ]
         }
         """
-        res = self._req(url=f"{URL}/portal.php?mod=topic&topicid=8")
-        if res == None:
-            return []
+        res = Cache.cahce_requests(url=f"{URL}/portal.php?mod=topic&topicid=8", read_from_cache=read_from_cache)
+        if res == None: return []
         data = {}
         all_years: list[Tag] = BeautifulSoup(res, features="html.parser").find_all("div", class_="tab-title title column cl")
         for year in all_years:
@@ -243,8 +173,8 @@ class Myself:
             data[year_list[0]["title"].split("年")[0]] = year_list
         return data
     
-    @classmethod
-    def search(self, keyword: str):
+    @staticmethod
+    def search(keyword: str) -> list:
         """
         搜尋動漫。
 
@@ -258,7 +188,7 @@ class Myself:
         ]
         """
         first_url = get(url=f"{URL}/search.php?mod=forum&srchtxt={keyword}&searchsubmit=yes").url
-        res = self._req(first_url)
+        res = Cache.cahce_requests(first_url, save_to_cache=False)
         if res == None:
             return []
         result_pages: list[BeautifulSoup] = [BeautifulSoup(res, features="html.parser")]
@@ -267,9 +197,9 @@ class Myself:
         data = []
         page_num = result_num // 20 + 1
         for i in range(2, page_num + 1):
-            result_pages.append(BeautifulSoup(self._req(f"{first_url}&page={i}"), features="html.parser"))
+            result_pages.append(BeautifulSoup(Cache.cahce_requests(f"{first_url}&page={i}", save_to_cache=False), features="html.parser"))
         for result_page in result_pages:
-            for animate_element in result_page.find("div", id="threadlist").find_all("li"):
+            for animate_element in result_page.select("#threadlist li"):
                 data.append({"title": animate_element.find("h3").text.replace("\n", "").lstrip(), "url": f"{URL}/thread-{animate_element['id']}-1-1.html"})
         return data
 

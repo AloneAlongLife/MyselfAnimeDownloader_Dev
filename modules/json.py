@@ -1,4 +1,5 @@
 from typing import Any, Optional, Union
+
 import orjson
 
 class Json:
