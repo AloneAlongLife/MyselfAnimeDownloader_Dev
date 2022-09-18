@@ -9,52 +9,90 @@
     </svg>
 </div>
 <div class="page data" style="display: none;">
-    <div class="block left_block">
-        <div class="info_block">
-            <div class="img_block">
-                <p class="cfont info_title">封面圖片</p>
-                <img id="info_img" src="/cache/img?url=https%3A%2F%2Fmyself-bbs.com%2Fdata%2Fattachment%2Fforum%2F202010%2F11%2F1314529sq2sy7gzmqqd7m2.jpg">
+    <div class="data_content">
+        <div class="block left_block">
+            <div class="info_block">
+                <div class="img_block">
+                    <p class="cfont info_title">封面圖片</p>
+                    <img id="info_img">
+                </div>
+                <hr>
+                <div class="intro_block">
+                    <p class="cfont info_title">作品資料</p>
+                    <div class="info_box">
+                        <p class="cfont info_text">名稱 :</p>
+                        <p id="info_name" class="cfont info_text"></p>
+                    </div>
+                    <div class="info_box">
+                        <p class="cfont info_text">作品類型 :</p>
+                        <p id="info_animate_type" class="cfont info_text"></p>
+                    </div>
+                    <div class="info_box">
+                        <p class="cfont info_text">首播日期 :</p>
+                        <p id="info_premiere_date" class="cfont info_text"></p>
+                    </div>
+                    <div class="info_box">
+                        <p class="cfont info_text">播出集數 :</p>
+                        <p id="info_episode_number" class="cfont info_text"></p>
+                    </div>
+                    <div class="info_box">
+                        <p class="cfont info_text">原著作者 :</p>
+                        <p id="info_author" class="cfont info_text"></p>
+                    </div>
+                    <div class="info_box">
+                        <p class="cfont info_text">Myself連結 :</p>
+                        <a id="info_url" class="cfont info_text" target="_blank"></a>
+                    </div>
+                    <div class="info_box">
+                        <p class="cfont info_text">官方網站 :</p>
+                        <a id="info_official_website" class="cfont info_text" target="_blank"></a>
+                    </div>
+                    <div class="info_box">
+                        <p class="cfont info_text">備註 :</p>
+                        <p id="info_remarks" class="cfont info_text"></p>
+                    </div>                
+                </div>
             </div>
-            <hr>
-            <div class="intro_block">
-                <p class="cfont info_title">作品資料</p>
-                <div class="info_box">
-                    <p class="cfont info_text">名稱 :</p>
-                    <p id="info_name" class="cfont info_text"></p>
-                </div>
-                <div class="info_box">
-                    <p class="cfont info_text">作品類型 :</p>
-                    <p id="info_animate_type" class="cfont info_text"></p>
-                </div>
-                <div class="info_box">
-                    <p class="cfont info_text">首播日期 :</p>
-                    <p id="info_premiere_date" class="cfont info_text"></p>
-                </div>
-                <div class="info_box">
-                    <p class="cfont info_text">原著作者 :</p>
-                    <p id="info_author" class="cfont info_text"></p>
-                </div>
-                <div class="info_box">
-                    <p class="cfont info_text">官方網站 :</p>
-                    <a id="info_official_website" class="cfont info_text" target="_blank"></a>
-                </div>
-                <div class="info_box">
-                    <p class="cfont info_text">備註 :</p>
-                    <p id="info_remarks" class="cfont info_text"></p>
-                </div>                
+            <hr class="row_hr">
+            <div class="des_block">
+                <p class="cfont info_title">劇情簡介</p>
+                <p id="info_synopsis" class="cfont des_text"></p>
             </div>
         </div>
-        <hr class="row_hr">
-        <div class="des_block">
-            <p class="cfont info_title">劇情簡介</p>
-            <p id="info_synopsis" class="cfont des_text"></p>
+        <hr class="rl_hr">
+        <div class="block right_block">
+            <div id="episode_loading" class="episode_page episode_loading">
+                <div class="ring_text font">Loading...</div>
+                <svg class="ring">
+                    <circle cx="76px" cy="76px" r="70px"></circle>
+                </svg>
+            </div>
+            <div class="episode_page episode_content" style="display: none;">
+                <div class="episode_selector">
+                    <button class="cfont">全選</button>
+                    <hr>
+                    <input type="text" class="cfont" placeholder="選取...">
+                    <button class="cfont">選取</button>
+                </div>
+                <hr class="row_hr">
+                <div class="episode_queue">
+                    <!-- <div class="episode_box">
+                        <p class="cfont">第一集</p>
+                        <input type="checkbox" class="cfont">
+                    </div> -->
+                </div>
+                <hr class="row_hr">
+                <div class="episode_send">
+                    <button class="cfont">確定</button>
+                    <button class="cfont">取消</button>
+                </div>
+            </div>
         </div>
-    </div>
-    <hr>
-    <div class="block right_block">
-        <div>Test</div>
     </div>
 </div>
 <div class="page results" id="search_results" style="display: none;">
-    
+    <!-- <div class="result_box">
+        <p class="cfont">HELLO WORLD</p>
+        <p class="cfont">【全 1 集】</p>
+    </div> -->
 </div>

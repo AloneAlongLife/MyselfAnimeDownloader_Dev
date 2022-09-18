@@ -15,6 +15,7 @@ while Config.readied == None: sleep(1)
 # if Config.readied == False:
 #     input("Press any key to exit...")
 #     exit()
+cont
 
 if __name__ == "__main__":
     if DEV_TEST:

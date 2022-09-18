@@ -1,27 +1,38 @@
 #home {
-    display: flex;
-    flex-direction: row;
     overflow: hidden;
     overflow-y: auto;
 }
 
+#home .home_content {
+    position: absolute;
+    height: calc(100% - 88px);
+    width: calc(100% - 48px);
+    top: 72px;
+    left: 48px;
+    display: flex;
+    flex-direction: row;
+}
+
 #home hr {
     width: 0px;
-    height: calc(100% - 2px);
+    height: 100%;
     border-style: solid;
     border-width: 1px;
     border-color: rgb(44, 44, 44);
     margin: 0px;
 }
+#home .lr_hr {
+    min-height: 551px;
+}
 
 #home .table {
-    height: calc(100% - 16px);
+    height: calc(100vh - 88px);
     flex: 1;
-    width: fit-content;
     margin: 8px;
     margin-right: 0px;
     display: flex;
     flex-direction: column;
+    min-height: 551px;
 }
 
 #home .info {
@@ -29,6 +40,7 @@
     height: calc(100% - 16px);
     width: 100%;
     margin: 8px;
+    margin-left: 0px;
 }
 
 #home .t_title {
@@ -62,9 +74,9 @@
 
 #home .table .queue {
     flex: 1;
-    height: 70%;
+    /* height: 70%; */
     margin: 8px;
-    margin-bottom: 16px;
+    /* margin-bottom: 16px; */
     overflow-y: auto;
     border-style: solid;
     border-width: 1px;

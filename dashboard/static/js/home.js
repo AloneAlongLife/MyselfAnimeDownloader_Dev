@@ -19,12 +19,15 @@ function createElement(el, options={}){
 async function update_queue() {
     let response = await fetch(document.location.origin + "/api/v1.0/queue");
     let data = JSON.parse(await response.text());
-    for (let i = 0; i < data.length; i++) {
-        let info = data[i];
-        let id = info.id;
+    for (key in data) {
+        let info = data[key];
+        let id = key;
         let name = info.name;
         let progress = info.progress;
         if (document.querySelector(`#${id}`) == null) {
+            if (progress == 100) {
+                continue;
+            }
             let progress_bar = createElement("div", {className: "progress_bar", id: id});
 
             let progress_title = createElement("div", {className: "progress_title"});
@@ -75,19 +78,28 @@ function get_setting() {
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4) {
             let data = JSON.parse(this.responseText);
-            let input_list = document.getElementById("setting_form").getElementsByTagName("input");
-            for (let i = 0; i < input_list.length; i++) {
-                if (input_list[i].type == "checkbox") {
-                    input_list[i].checked = data[input_list[i].name];
-                }
-                else {
-                    input_list[i].value = data[input_list[i].name];
-                }
-            }
-        }
+            get_setting_form(data);
+        };
     }
     xhttp.open("POST", "/", true);
     xhttp.setRequestHeader("Content-type", "text");
     xhttp.setRequestHeader("Request-type", "get_setting_form");
     xhttp.send();
+}
+
+function get_setting_form(data) {
+    try {
+        let input_list = document.getElementById("setting_form").getElementsByTagName("input");
+        for (let i = 0; i < input_list.length; i++) {
+            if (input_list[i].type == "checkbox") {
+                input_list[i].checked = data[input_list[i].name];
+            }
+            else {
+                input_list[i].value = data[input_list[i].name];
+            }
+        }
+    }
+    catch {
+        setTimeout(()=>{get_setting_form(data);}, 1000);
+    }
 }

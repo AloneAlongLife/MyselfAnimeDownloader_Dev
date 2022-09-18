@@ -97,6 +97,7 @@ class Myself:
 
         return: :class:`dict`
         {
+            url: 網址,
             name: 名字,
             animate_type: 作品類型,
             premiere_date: 首播日期,
@@ -114,7 +115,7 @@ class Myself:
         res = Cache.cahce_requests(url, read_from_cache=read_from_cache)
         if res == None: return None
         # 一般信息
-        data = {}
+        data = {"url": url}
         res: BeautifulSoup = BeautifulSoup(res, features="html.parser")
         all_info: list[Tag] = res.select("div.info_info li")
         for info in all_info:

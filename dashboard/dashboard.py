@@ -25,7 +25,7 @@ def _deal_requeste(type_of: str, data: str | bytes, raw_requests: Request):
         elif type_of == "animate_info":
             keyword = raw_requests.json["keyword"]
             if "://" in keyword:
-                return Json.dumps({"type": "url", "data": Myself.animate_info_table(keyword)})
+                return Json.dumps({"type": "url", "data": Myself.animate_info_table(keyword, raw_requests.json["cache"])})
             return Json.dumps({"type": "search", "data": Myself.search(keyword)})
     except:
         return ("", 404)
@@ -55,9 +55,32 @@ class Dashboard():
     @app.route("/api/v1.0/<data>")
     def api(data: str):
         if data == "queue":
-            # from random import randint
-            # return [{"name": "test_1", "progress": randint(0, 100), "id": "abcd"}, {"name": "test_2", "progress": randint(0, 100), "id": "abce"}]
-            return []
+            from random import randint
+            return Json.dumps(
+                {"a1": {"name": "test_0", "progress": 100},
+                "a2": {"name": "test_1", "progress": randint(0, 100)},
+                "a3": {"name": "test_1", "progress": randint(0, 100)},
+                "a4": {"name": "test_1", "progress": randint(0, 100)},
+                "a5": {"name": "test_1", "progress": randint(0, 100)},
+                "a6": {"name": "test_1", "progress": randint(0, 100)},
+                "a7": {"name": "test_1", "progress": randint(0, 100)},
+                "a8": {"name": "test_1", "progress": randint(0, 100)},
+                "a9": {"name": "test_1", "progress": randint(0, 100)},
+                "a10": {"name": "test_1", "progress": randint(0, 100)},
+                "a11": {"name": "test_1", "progress": randint(0, 100)},
+                "a12": {"name": "test_1", "progress": randint(0, 100)},
+                "a13": {"name": "test_1", "progress": randint(0, 100)},
+                "a14": {"name": "test_1", "progress": randint(0, 100)},
+                "a15": {"name": "test_1", "progress": randint(0, 100)},
+                "a16": {"name": "test_1", "progress": randint(0, 100)},
+                "a17": {"name": "test_1", "progress": randint(0, 100)},
+                "a18": {"name": "test_1", "progress": randint(0, 100)},
+                "a19": {"name": "test_1", "progress": randint(0, 100)},
+                "a10": {"name": "test_1", "progress": randint(0, 100)},
+                "a11": {"name": "test_1", "progress": randint(0, 100)},
+                "a12": {"name": "test_1", "progress": randint(0, 100)},
+                })
+            # return []
         return ("", 404)
     
     def run(self):
