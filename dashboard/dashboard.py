@@ -1,9 +1,9 @@
 import logging
 from urllib.parse import unquote
 
-from flask import (Flask, Request, make_response, redirect, render_template,
-                   request, url_for)
-from modules import Cache, Config, Json, Myself
+from flask import (Flask, Request, make_response, render_template,
+                   request)
+from modules import Cache, Config, Json, Myself, Download_Queue
 
 logger = logging.getLogger("main")
 
@@ -55,32 +55,7 @@ class Dashboard():
     @app.route("/api/v1.0/<data>")
     def api(data: str):
         if data == "queue":
-            from random import randint
-            return Json.dumps(
-                {"a1": {"name": "test_0", "progress": 100},
-                "a2": {"name": "test_1", "progress": randint(0, 100)},
-                "a3": {"name": "test_1", "progress": randint(0, 100)},
-                "a4": {"name": "test_1", "progress": randint(0, 100)},
-                "a5": {"name": "test_1", "progress": randint(0, 100)},
-                "a6": {"name": "test_1", "progress": randint(0, 100)},
-                "a7": {"name": "test_1", "progress": randint(0, 100)},
-                "a8": {"name": "test_1", "progress": randint(0, 100)},
-                "a9": {"name": "test_1", "progress": randint(0, 100)},
-                "a10": {"name": "test_1", "progress": randint(0, 100)},
-                "a11": {"name": "test_1", "progress": randint(0, 100)},
-                "a12": {"name": "test_1", "progress": randint(0, 100)},
-                "a13": {"name": "test_1", "progress": randint(0, 100)},
-                "a14": {"name": "test_1", "progress": randint(0, 100)},
-                "a15": {"name": "test_1", "progress": randint(0, 100)},
-                "a16": {"name": "test_1", "progress": randint(0, 100)},
-                "a17": {"name": "test_1", "progress": randint(0, 100)},
-                "a18": {"name": "test_1", "progress": randint(0, 100)},
-                "a19": {"name": "test_1", "progress": randint(0, 100)},
-                "a10": {"name": "test_1", "progress": randint(0, 100)},
-                "a11": {"name": "test_1", "progress": randint(0, 100)},
-                "a12": {"name": "test_1", "progress": randint(0, 100)},
-                })
-            # return []
+            return Download_Queue.get_dict()
         return ("", 404)
     
     def run(self):

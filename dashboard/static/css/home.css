@@ -100,6 +100,7 @@
 }
 #home .table .progress_bar .progress_title {
     display: flex;
+    align-items: center;
 }
 #home .table .progress_title p{
     margin: 4px;
@@ -111,6 +112,29 @@
 }
 #home .table .progress_title .empty{
     width: 100%;
+}
+#home .table .progress_title button {
+    height: 24px;
+    margin: 0px 2px;
+    width: 48px;
+    font-size: 18px;
+    color: rgb(77, 77, 77);
+    text-align: center;
+    background-color: transparent;
+    border-style: solid;
+    border-radius: 4px;
+    border-width: 1px;
+    border-color: rgb(77, 77, 77);
+    transition: 0.2s;
+    cursor: pointer;
+}
+#home .table .progress_title button:hover {
+    color: rgb(255, 255, 255);
+    border-color: rgb(255, 255, 255);
+}
+#home .table .progress_title button:nth-of-type(2):hover {
+    color: rgb(255, 50, 50);
+    border-color: rgb(255, 50, 50);
 }
 #home .table .progress_title .present{
     margin-top: auto;

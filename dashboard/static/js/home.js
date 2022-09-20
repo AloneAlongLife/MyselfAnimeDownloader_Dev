@@ -33,6 +33,8 @@ async function update_queue() {
             let progress_title = createElement("div", {className: "progress_title"});
             progress_title.appendChild(createElement("p", {className: "cfont", textContent: name}));
             progress_title.appendChild(createElement("div", {className: "empty"}));
+            progress_title.appendChild(createElement("button", {className: "material-icons", textContent: "pause"}));
+            progress_title.appendChild(createElement("button", {className: "material-icons", textContent: "stop"}));
             progress_title.appendChild(createElement("p", {className: "present cfont", textContent: `${progress}%`}));
 
             let progress_e = createElement("div", {className: "progress"});

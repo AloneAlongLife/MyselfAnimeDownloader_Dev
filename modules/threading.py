@@ -8,7 +8,16 @@ class Thread(threading.Thread):
     可停止式線程。
     新增:
      - stop(): 強制停止線程。
+     - get_return(): 取得函數回傳值。
     """
+    _return = None
+    def run(self):
+        if self._target is not None:
+            self._return = self._target(*self._args, **self._kwargs)
+
+    def get_return(self):
+        return self._return
+
     def stop(self):
         if not self.is_alive() or self.ident == None: raise threading.ThreadError("The thread is not active.")
         elif ctypes.pythonapi.PyThreadState_SetAsyncExc(self.ident, ctypes.py_object(SystemExit)) == 1: return

@@ -15,7 +15,6 @@ while Config.readied == None: sleep(1)
 # if Config.readied == False:
 #     input("Press any key to exit...")
 #     exit()
-cont
 
 if __name__ == "__main__":
     if DEV_TEST:
@@ -30,7 +29,7 @@ if __name__ == "__main__":
     if not isdir("temp"): makedirs("temp") # 存放影片待合成片段(.ts)
 
     dashboard = Dashboard()
-    flask_thread = Thread(target=dashboard.run)
+    flask_thread = Thread(target=dashboard.run, name="FlaskThread")
     flask_thread.start()
 
     # while True:

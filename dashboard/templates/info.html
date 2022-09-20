@@ -69,10 +69,10 @@
             </div>
             <div class="episode_page episode_content" style="display: none;">
                 <div class="episode_selector">
-                    <button class="cfont">全選</button>
+                    <button class="cfont" onclick="select('all')">全選</button>
                     <hr>
                     <input type="text" class="cfont" placeholder="選取...">
-                    <button class="cfont">選取</button>
+                    <button class="cfont" onclick="select('input')">選取</button>
                 </div>
                 <hr class="row_hr">
                 <div class="episode_queue">
@@ -84,7 +84,7 @@
                 <hr class="row_hr">
                 <div class="episode_send">
                     <button class="cfont">確定</button>
-                    <button class="cfont">取消</button>
+                    <button class="cfont" onclick="select('none')">取消</button>
                 </div>
             </div>
         </div>

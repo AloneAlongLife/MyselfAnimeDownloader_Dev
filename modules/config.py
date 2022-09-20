@@ -28,7 +28,7 @@ def _gen_config():
     Config.update()
     sleep(1)
     logger.critical("config.json not found.")
-    logger.info("Generate a new config.json from config-example.json.")
+    logger.warning("Generate a new config.json from config-example.json.")
     Config._ready(False)
     # current_thread().stop()
 
@@ -171,5 +171,5 @@ def auto_update():
         _auto_update_lock.release()
         sleep(1)
 
-auto_update_thread = Thread(target=auto_update, name="Config_Auto_Update")
+auto_update_thread = Thread(target=auto_update, name="ConfigAutoUpdateThread")
 auto_update_thread.start()

@@ -334,7 +334,7 @@
     border-color: rgb(255, 255, 255);
     color: rgb(255, 255, 255);
 }
-#info .episode_content .episode_send button:nth-child(2):hover {
+#info .episode_content .episode_send button:nth-of-type(2):hover {
     border-color: rgb(255, 50, 50);
     color: rgb(255, 50, 50);
 }

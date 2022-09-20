@@ -118,7 +118,7 @@ function update_episode_queue(data, check_episode=true) {
     document.querySelector("div.episode_page.episode_content").style["display"] = "none";
 
     if (check_episode) {
-        let episode_num_check = `全 ${data["episode"]} 話`;
+        let episode_num_check = `全 ${data["episode_data"].length} 話`;
         if (episode_num_check != data["episode_number"]) {
             let xhttp = new XMLHttpRequest();
             let send_data = {
