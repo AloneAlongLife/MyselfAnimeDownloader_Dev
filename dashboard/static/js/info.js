@@ -52,3 +52,28 @@ function select(input) {
         }
     }
 }
+
+function send_download_queue() {
+    let xhttp = new XMLHttpRequest();
+    let data = {}
+    data["url"] = document.getElementById("info_url").href;
+    data["queue"] = [];
+    let queue = document.getElementsByClassName("episode_queue")[0];
+    for (let i = 0; i < queue.length; i++) {
+        let content_element = queue[i];
+        let temp_data = {};
+        if (content_element.querySelector("input").checked) {
+            temp_data["url"] = content_element.querySelector("input").value;
+            temp_data["index"] = content_element.querySelector("p");
+        }
+    }
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4) {
+            get_setting();
+        }
+    }
+    xhttp.open("POST", "/", true);
+    xhttp.setRequestHeader("Content-type", "application/json");
+    xhttp.setRequestHeader("Request-type", "send_setting_form");
+    xhttp.send(JSON.stringify(data));
+}
