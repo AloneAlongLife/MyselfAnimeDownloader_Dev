@@ -17,9 +17,10 @@ _CANCEL_LIST = []
 
 _ACTIVATE_THREAD = 0
 
-def _download(uuid: str, retry: int=0, max_retry: int=Config.myself_setting.download_retry):
+def _download(uuid: str, retry: int=0, max_retry: int=Config.download_setting.download_retry):
     data = _PROGRESS_DICT[uuid]
-    downloader = M3U8()
+    if data["from"] == "Myself":
+        downloader = M3U8()
     args = (
         data["url"],
         _LOCK_DICT[uuid],
@@ -56,7 +57,7 @@ def _download(uuid: str, retry: int=0, max_retry: int=Config.myself_setting.down
 def _auto_download_job(id: int):
     global _ACTIVATE_THREAD
     _ACTIVATE_THREAD += 1
-    while id < Config.myself_setting.auto_download_thread:
+    while id < Config.download_setting.auto_download_thread:
         if _ATD_QUEUE.empty():
             sleep(1)
             continue
@@ -75,8 +76,9 @@ class Download_Queue:
         url: Union[str, list],
         name: Union[str, list],
         out_path: str,
-        thread_number: int=Config.myself_setting.auto_download_thread,
-        connect_number: int=Config.myself_setting.auto_download_connection,
+        from_: str,
+        thread_number: int=Config.download_setting.auto_download_thread,
+        connect_number: int=Config.download_setting.auto_download_connection,
         type_: int=1
     ) -> None:
         """
@@ -88,6 +90,8 @@ class Download_Queue:
             名稱。
         out_path: :class:`str`
             輸出路徑。
+        from_: :class:`str`
+            Myself或Anime1
         thread_number: :class:`int`
             線程數。
         connect_number: :class:`int`
@@ -102,6 +106,7 @@ class Download_Queue:
             "name": "",
             "progress": 0,
             "out_path": out_path,
+            "from": from_,
             "connect_number": connect_number,
             "start": False,
             "pause": False,
@@ -187,8 +192,8 @@ def auto_queue_update():
     """
     global _ACTIVATE_THREAD, _PROGRESS_DICT, _LOCK_DICT, _FINISH_DICT
     while True:
-        if _ACTIVATE_THREAD < Config.myself_setting.auto_download_thread:
-            Thread(target=_auto_download_job, args=_ACTIVATE_THREAD, name=f"AutoDownloader_{_ACTIVATE_THREAD}").start()
+        if _ACTIVATE_THREAD < Config.download_setting.auto_download_thread:
+            Thread(target=_auto_download_job, args=(_ACTIVATE_THREAD,), name=f"AutoDownloader_{_ACTIVATE_THREAD}").start()
         for uuid, f_time in _FINISH_DICT:
             if time() - f_time > 300:
                 del _PROGRESS_DICT[uuid]

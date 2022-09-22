@@ -17,7 +17,7 @@ logger = getLogger("main")
 download_exception = False
 
 HEADERS = {
-    "User-Agent": Config.myself_setting.url
+    "User-Agent": Config.download_setting.user_agent
 }
 
 def _req(url: str, timeout: int=5) -> Union[Response, None]:

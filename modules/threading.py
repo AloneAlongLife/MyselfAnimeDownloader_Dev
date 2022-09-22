@@ -2,6 +2,7 @@ import ctypes
 import threading
 from os import system
 from time import sleep
+from typing import Optional
 
 class Thread(threading.Thread):
     """
@@ -10,6 +11,11 @@ class Thread(threading.Thread):
      - stop(): 強制停止線程。
      - get_return(): 取得函數回傳值。
     """
+    # def __init__(self, group=None, target=..., name: Optional[str]=None, args: Optional[None]=(), kwargs: Optional[None]={}, *, daemon: Optional[bool]=None) -> None:
+    #     self._args = args
+    #     self._kwargs = kwargs
+    #     super().__init__(group, target, name, args, kwargs, daemon=daemon)
+
     _return = None
     def run(self):
         if self._target is not None:

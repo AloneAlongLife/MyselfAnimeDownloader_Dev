@@ -17,11 +17,12 @@ BAN = "\\/:*?\"<>|"
 # 替代用字元
 REPLACE = "_"
 # 網址
-URL = Config.myself_setting.url
+MYSELF_URL = Config.myself_setting.url
+ANIME1_URL = Config.anime1_setting.url
 
 # 偽裝瀏覽器
 HEADERS = {
-    "User-Agent": Config.myself_setting.user_agent
+    "User-Agent": Config.download_setting.user_agent
 }
 
 def _retouch_url(name: str) -> str:
@@ -76,8 +77,10 @@ class Cache:
     @staticmethod
     def data_to_cache(data: Union[bytes, str], url: str="") -> None:
         if type(data) != bytes: data = data.encode()
-        if URL in url:
-            file = url.replace(URL, "cache")
+        if MYSELF_URL in url:
+            file = url.replace(MYSELF_URL, "cache/myself")
+        elif ANIME1_URL in url:
+            file = url.replace(ANIME1_URL, "cache/anime1")
         else:
             url_rep = url.replace("://", "").split("/")
             url_rep[0] = "cache"
@@ -90,8 +93,10 @@ class Cache:
 
     @staticmethod
     def read_from_cache(url: str="", auto_download=True) -> Optional[bytes]:
-        if URL in url:
-            file = url.replace(URL, "cache")
+        if MYSELF_URL in url:
+            file = url.replace(MYSELF_URL, "cache/myself")
+        elif ANIME1_URL in url:
+            file = url.replace(ANIME1_URL, "cache/anime1")
         else:
             url_rep = url.replace("://", "").split("/")
             url_rep[0] = "cache"

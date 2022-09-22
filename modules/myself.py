@@ -41,7 +41,7 @@ def _retouch_name(name: str) -> str:
     for char in BAN: name = name.replace(char, REPLACE)
     return name
 
-def _google_search_redirect(url: str) -> Optional[str]:
+def google_search_redirect(url: str) -> Optional[str]:
     if "www.google.com/url?" in url:
         url = unquote(url.split("url=")[1].split("&")[0])
     return url
@@ -110,7 +110,7 @@ class Myself:
             episode_data: [{name: 集數, url: 網址},{...}]
         }
         """
-        url = _google_search_redirect(url)
+        url = google_search_redirect(url)
         if URL not in url: return None
         res = Cache.cahce_requests(url, read_from_cache=read_from_cache)
         if res == None: return None

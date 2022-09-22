@@ -3,9 +3,12 @@ from urllib.parse import unquote
 
 from flask import (Flask, Request, make_response, render_template,
                    request)
-from modules import Cache, Config, Json, Myself, Download_Queue
+from modules import Cache, Config, Json, Myself, Download_Queue, google_search_redirect
 
 logger = logging.getLogger("main")
+
+MYSELF_URL = Config.myself_setting.url
+ANIME1_URL = Config.anime1_setting.url
 
 def _deal_requeste(type_of: str, data: str | bytes, raw_requests: Request):
     try:
@@ -16,17 +19,31 @@ def _deal_requeste(type_of: str, data: str | bytes, raw_requests: Request):
         if type_of == "include":
             return render_template(raw_requests.json.get("file_name"))
         elif type_of == "send_setting_form":
-            for item in raw_requests.json.items():
+            for item in raw_requests.json.get("download_setting", {}).items():
+                if item[1] == None: continue
+                Config.download_setting[item[0]] = type(Config.download_setting.get(item[0], ""))(item[1])
+            for item in raw_requests.json.get("myself_setting", {}).items():
                 if item[1] == None: continue
                 Config.myself_setting[item[0]] = type(Config.myself_setting.get(item[0], ""))(item[1])
+            for item in raw_requests.json.get("anime1_setting", {}).items():
+                if item[1] == None: continue
+                Config.anime1_setting[item[0]] = type(Config.anime1_setting.get(item[0], ""))(item[1])
             Config.save()
         elif type_of == "get_setting_form":
-            return Config.myself_setting.to_str()
+            return {
+                "download_setting": Config.download_setting.to_str(),
+                "myself_setting": Config.myself_setting.to_str(),
+                "anime1_setting": Config.anime1_setting.to_str()
+            }
         elif type_of == "animate_info":
             keyword = raw_requests.json["keyword"]
+            from_ = raw_requests.json["from"]
             if "://" in keyword:
-                return Json.dumps({"type": "url", "data": Myself.animate_info_table(keyword, raw_requests.json["cache"])})
-            return Json.dumps({"type": "search", "data": Myself.search(keyword)})
+                keyword = google_search_redirect(keyword)
+                if MYSELF_URL in keyword:
+                    return Json.dumps({"type": "url", "data": Myself.animate_info_table(keyword, raw_requests.json["cache"])})
+            if from_ == "Myself":
+                return Json.dumps({"type": "search", "data": Myself.search(keyword)})
     except:
         return ("", 404)
     return ("", 204)

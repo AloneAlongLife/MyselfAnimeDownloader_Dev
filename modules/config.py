@@ -82,38 +82,43 @@ class _Other_Setting(_Str_Dict):
         self.log_level = _config["log_level"]
         self.version = _config["version"]
 
-class _MySelf_Setting(_Str_Dict):
-    url: str
+class _Download_Setting(_Str_Dict):
     user_agent: str
     animate_classify: bool
-    check_animate_update: int
     auto_download_connection: int
     auto_download_thread: int
-    default_download_mode: int
     download_retry: int
-    customized_file_name: str
-    customized_dir_name: str
-    download_path: str
     zerofile: int
     def __init__(self, _config: dict):
         for item in _config.items():
             self[item[0]] = item[1]
-        self.url = _config["url"]
         self.user_agent = _config["user_agent"]
         self.animate_classify = _config["animate_classify"]
-        self.check_animate_update = _config["check_animate_update"]
         self.auto_download_connection = _config["auto_download_connection"]
         self.auto_download_thread = _config["auto_download_thread"]
-        self.default_download_mode = _config["default_download_mode"]
         self.download_retry = _config["download_retry"]
+        self.zerofile = _config["zerofile"]
+
+class _Animate_Setting(_Str_Dict):
+    url: str
+    check_animate_update: int
+    customized_file_name: str
+    customized_dir_name: str
+    download_path: str
+    def __init__(self, _config: dict):
+        for item in _config.items():
+            self[item[0]] = item[1]
+        self.url = _config["url"]
+        self.check_animate_update = _config["check_animate_update"]
         self.customized_file_name = _config["customized_file_name"]
         self.customized_dir_name = _config["customized_dir_name"]
         self.download_path = _config["download_path"]
-        self.zerofile = _config["zerofile"]
 
 class Config:
     web_console: _Web_Console
-    myself_setting: _MySelf_Setting
+    download_setting: _Download_Setting
+    myself_setting: _Animate_Setting
+    anime1_setting: _Animate_Setting
     other_setting: _Other_Setting
     updated: bool = False
     readied: Union[bool, None] = None
@@ -129,7 +134,9 @@ class Config:
 
         self.config = _CONFIG.copy()
         self.web_console = _Web_Console(_CONFIG["web_console"])
-        self.myself_setting = _MySelf_Setting(_CONFIG["myself_setting"])
+        self.download_setting = _Download_Setting(_CONFIG["download_setting"])
+        self.myself_setting = _Animate_Setting(_CONFIG["myself_setting"])
+        self.anime1_setting = _Animate_Setting(_CONFIG["anime1_setting"])
         self.other_setting = _Other_Setting(_CONFIG["other_setting"])
         self.updated = True
 
@@ -143,7 +150,9 @@ class Config:
         _auto_update_lock.acquire()
         data = {}
         data["web_console"] = self.web_console
+        data["download_setting"] = self.download_setting
         data["myself_setting"] = self.myself_setting
+        data["anime1_setting"] = self.anime1_setting
         data["other_setting"] = self.other_setting
         Json.dump(_FILE_PATH, data)
         modify_time = getmtime(_FILE_PATH)

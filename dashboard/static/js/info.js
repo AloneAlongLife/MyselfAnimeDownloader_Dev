@@ -67,13 +67,8 @@ function send_download_queue() {
             temp_data["index"] = content_element.querySelector("p");
         }
     }
-    xhttp.onreadystatechange = function() {
-        if (this.readyState == 4) {
-            get_setting();
-        }
-    }
     xhttp.open("POST", "/", true);
     xhttp.setRequestHeader("Content-type", "application/json");
-    xhttp.setRequestHeader("Request-type", "send_setting_form");
+    xhttp.setRequestHeader("Request-type", "send_download_queue");
     xhttp.send(JSON.stringify(data));
 }

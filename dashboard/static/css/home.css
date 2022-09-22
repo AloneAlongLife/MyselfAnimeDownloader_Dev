@@ -174,7 +174,7 @@
     margin: 0px;
 }
 
-#home .info .info_card p {
+#home .info .info_card .info_item p {
     font-size: 18px;
     margin: 4px;
     /* color: rgb(160, 160, 160); */
@@ -264,6 +264,37 @@
 }
 #home .info .info_card .info_item select:hover {
     color: rgb(0, 0, 0);
+}
+
+#home .button_box {
+    display: flex;
+    justify-content: left;
+}
+#home .button_box button {
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 0px;
+    border-color: rgb(77, 77, 77);
+    margin: 8px 0px;
+    margin-bottom: 4px;
+    color: rgb(77, 77, 77);
+    background-color: transparent;
+    height: 32px;
+    width: 80px;
+    font-size: 16px;
+    padding-bottom: 2px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+#home .button_box button:first-child {
+    border-radius: 5px 0px 0px 5px;
+}
+#home .button_box button:last-child {
+    border-radius: 0px 5px 5px 0px;
+}
+#home .button_box button:hover {
+    color: rgb(255, 255, 255);
+    border-color: rgb(255, 255, 255);
 }
 
 #home #submit_setting {

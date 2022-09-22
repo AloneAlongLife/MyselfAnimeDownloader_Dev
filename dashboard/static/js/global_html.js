@@ -41,15 +41,19 @@ function search_keydown(element, e) {
 
 function send_keyword(keyword, from_cache=true) {
     let xhttp = new XMLHttpRequest();
+    let from = "Myself";
     let data = {
         "keyword": keyword,
-        "cache": from_cache
+        "cache": from_cache,
+        "from": from
     }
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4) {
             try {
                 let raw_data = JSON.parse(this.responseText);
-                update_animate_info(raw_data);
+                if (from == "Myself") {
+                    update_animate_info(raw_data);
+                }
             }
             catch {
                 show_page("search");

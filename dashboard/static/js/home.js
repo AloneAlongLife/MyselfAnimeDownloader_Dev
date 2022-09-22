@@ -2,6 +2,19 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function show_setting(page_name) {
+    let page_list = document.querySelectorAll("#setting_form > div.setting_card");
+    for (let i = 0; i < page_list.length; i++) {
+        let page = page_list[i];
+        if (page.id == page_name) {
+            page.style["display"] = "";
+        }
+        else {
+            page.style["display"] = "none";
+        }
+    }
+}
+
 function home_onload() {
     update_queue();
     setInterval(update_queue, 3000);
@@ -17,52 +30,60 @@ function createElement(el, options={}){
 }
 
 async function update_queue() {
-    let response = await fetch(document.location.origin + "/api/v1.0/queue");
-    let data = JSON.parse(await response.text());
-    for (key in data) {
-        let info = data[key];
-        let id = key;
-        let name = info.name;
-        let progress = info.progress;
-        if (document.querySelector(`#${id}`) == null) {
-            if (progress == 100) {
-                continue;
+    try {
+        let response = await fetch(document.location.origin + "/api/v1.0/queue");
+        let data = JSON.parse(await response.text());
+        for (key in data) {
+            let info = data[key];
+            let id = key;
+            let name = info.name;
+            let progress = info.progress;
+            if (document.querySelector(`#${id}`) == null) {
+                if (progress == 100) {
+                    continue;
+                }
+                let progress_bar = createElement("div", {className: "progress_bar", id: id});
+
+                let progress_title = createElement("div", {className: "progress_title"});
+                progress_title.appendChild(createElement("p", {className: "cfont", textContent: name}));
+                progress_title.appendChild(createElement("div", {className: "empty"}));
+                progress_title.appendChild(createElement("button", {className: "material-icons", textContent: "pause"}));
+                progress_title.appendChild(createElement("button", {className: "material-icons", textContent: "stop"}));
+                progress_title.appendChild(createElement("p", {className: "present cfont", textContent: `${progress}%`}));
+
+                let progress_e = createElement("div", {className: "progress"});
+                progress_e.appendChild(createElement("div", {className: "in"}));
+
+                progress_bar.appendChild(progress_title);
+                progress_bar.appendChild(progress_e);
+
+                document.querySelector(".queue").appendChild(progress_bar);
             }
-            let progress_bar = createElement("div", {className: "progress_bar", id: id});
-
-            let progress_title = createElement("div", {className: "progress_title"});
-            progress_title.appendChild(createElement("p", {className: "cfont", textContent: name}));
-            progress_title.appendChild(createElement("div", {className: "empty"}));
-            progress_title.appendChild(createElement("button", {className: "material-icons", textContent: "pause"}));
-            progress_title.appendChild(createElement("button", {className: "material-icons", textContent: "stop"}));
-            progress_title.appendChild(createElement("p", {className: "present cfont", textContent: `${progress}%`}));
-
-            let progress_e = createElement("div", {className: "progress"});
-            progress_e.appendChild(createElement("div", {className: "in"}));
-
-            progress_bar.appendChild(progress_title);
-            progress_bar.appendChild(progress_e);
-
-            document.querySelector(".queue").appendChild(progress_bar);
+            document.querySelector(`#${id} > div.progress_title > p.present.cfont`).textContent = `${progress}%`;
+            document.querySelector(`#${id} > div.progress > div`).style.width = `${progress}%`;
         }
-        document.querySelector(`#${id} > div.progress_title > p.present.cfont`).textContent = `${progress}%`;
-        document.querySelector(`#${id} > div.progress > div`).style.width = `${progress}%`;
     }
+    catch {}
 }
 
 function send_setting() {
     let xhttp = new XMLHttpRequest();
     let data = {}
-    let input_list = document.getElementById("setting_form").getElementsByTagName("input");
-    for (let i = 0; i < input_list.length; i++) {
-        let value = input_list[i].value;
-        if (value == "") {
-            value = null;
+    let setting_list = document.getElementById("setting_form").getElementsByClassName("info_card");
+    for (let i = 0; i < setting_list.length; i++) {
+        let input_list = setting_list[i].getElementsByTagName("input")
+        let temp_data = {};
+        for (let j = 0; j < input_list.length; j++) {
+            let value = input_list[j].value;
+            if (value == "") {
+                value = null;
+            }
+            else if (input_list[j].type == "checkbox") {
+                value = input_list[j].checked;
+            }
+            temp_data[input_list[j].name] = value;
         }
-        else if (input_list[i].type == "checkbox") {
-            value = input_list[i].checked;
-        }
-        data[input_list[i].name] = value;
+        data[setting_list[i].id] = temp_data;
     }
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4) {
@@ -80,7 +101,7 @@ function get_setting() {
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4) {
             let data = JSON.parse(this.responseText);
-            get_setting_form(data);
+            update_setting_form(data);
         };
     }
     xhttp.open("POST", "/", true);
@@ -89,19 +110,23 @@ function get_setting() {
     xhttp.send();
 }
 
-function get_setting_form(data) {
-    try {
-        let input_list = document.getElementById("setting_form").getElementsByTagName("input");
-        for (let i = 0; i < input_list.length; i++) {
-            if (input_list[i].type == "checkbox") {
-                input_list[i].checked = data[input_list[i].name];
-            }
-            else {
-                input_list[i].value = data[input_list[i].name];
+function update_setting_form(data) {
+    // try {
+        let setting_list = document.getElementById("setting_form").getElementsByClassName("info_card");
+        for (let i = 0; i < setting_list.length; i++) {
+            let input_list = setting_list[i].getElementsByTagName("input")
+            let temp_data = JSON.parse(data[setting_list[i].id]);
+            for (let j = 0; j < input_list.length; j++) {
+                if (input_list[j].type == "checkbox") {
+                    input_list[j].checked = temp_data[input_list[j].name];
+                }
+                else {
+                    input_list[j].value = temp_data[input_list[j].name];
+                }
             }
         }
-    }
-    catch {
-        setTimeout(()=>{get_setting_form(data);}, 1000);
-    }
+    // }
+    // catch {
+    //     setTimeout(()=>{update_setting_form(data);}, 1000);
+    // }
 }

@@ -1,22 +1,30 @@
 {
     "web_console": {
         "host": "0.0.0.0",
-        "port": 5000,
-        "debug": false
+        "port": 5005,
+        "debug": true
+    },
+    "download_setting": {
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.114 Safari/537.36 OPR/89.0.4447.64 (Edition GX-CN)",
+        "animate_classify": true,
+        "auto_download_connection": 6,
+        "auto_download_thread": 3,
+        "download_retry": 3,
+        "zerofile": 2
     },
     "myself_setting": {
         "url": "https://myself-bbs.com",
-        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.114 Safari/537.36 OPR/89.0.4447.64 (Edition GX-CN)",
-        "animate_classify": true,
         "check_animate_update": 5,
-        "auto_download_connection": 6,
-        "auto_download_thread": 3,
-        "default_download_mode": 0,
-        "download_retry": 3,
         "customized_file_name": "",
         "customized_dir_name": "",
-        "download_path": "",
-        "zerofile": 2
+        "download_path": ""
+    },
+    "anime1_setting": {
+        "url": "https://anime1.me",
+        "check_animate_update": 5,
+        "customized_file_name": "",
+        "customized_dir_name": "",
+        "download_path": ""
     },
     "other_setting": {
         "time_zone": 8,

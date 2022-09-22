@@ -25,36 +25,15 @@
         </div>
         <div id="setting_form" class="info_content">
             <p class="info_title cfont">一般設定</p>
-            <div class="info_card">
+            <div id="download_setting" class="info_card">
                 <div class="info_item">
                     <p class="cfont">以資料夾分類</p>
                     <input type="checkbox" name="animate_classify">
-                </div>
-                <div class="info_item long_item">
-                    <p class="cfont">下載資料夾 : </p>
-                    <input class="l_input" type="text" name="download_path">
-                </div>
-                <div class="info_item long_item">
-                    <p class="cfont">自定義檔案名稱 : </p>
-                    <input class="l_input" type="text" name="customized_file_name">
-                </div>
-                <div class="info_item long_item">
-                    <p class="cfont">自定義資料夾名稱 : </p>
-                    <input class="l_input" type="text" name="customized_dir_name">
                 </div>
                 <div class="info_item">
                     <p class="cfont">補零至第</p>
                     <input class="c_input" type="number" name="zerofile">
                     <p class="cfont">位</p>
-                </div>
-            </div>
-            <hr>
-            <p class="info_title cfont">自動下載設定</p>
-            <div class="info_card">
-                <div class="info_item">
-                    <p class="cfont">檢查更新間隔 : </p>
-                    <input class="c_input" type="number" name="check_animate_update">
-                    <p class="cfont">分鐘</p>
                 </div>
                 <div class="info_item">
                     <p class="cfont">同時下載數量 : </p>
@@ -71,13 +50,51 @@
                     <input class="c_input" type="number" name="download_retry">
                     <p class="cfont">次</p>
                 </div>
+            </div>
+            <hr>
+            <div class="button_box">
+                <button class="cfont" onclick="show_setting('myself_setting')">Myself</button>
+                <button class="cfont" onclick="show_setting('anime1_setting')">Anime1</button>
+            </div>
+            
+            <div id="myself_setting" class="info_card setting_card">
+                <p class="info_title cfont">Myself設定</p>
                 <div class="info_item">
-                    <p class="cfont">下載模式 : </p>
-                    <select name="default_download_mode">
-                        <option value="0">Test_0</option>
-                        <option value="1">Test_1</option>
-                        <option value="2">Test_2</option>
-                    </select>
+                    <p class="cfont">檢查更新間隔 : </p>
+                    <input class="c_input" type="number" name="check_animate_update">
+                    <p class="cfont">分鐘</p>
+                </div>
+                <div class="info_item long_item">
+                    <p class="cfont">下載資料夾 : </p>
+                    <input class="l_input" type="text" name="download_path">
+                </div>
+                <div class="info_item long_item">
+                    <p class="cfont">自定義檔案名稱 : </p>
+                    <input class="l_input" type="text" name="customized_file_name">
+                </div>
+                <div class="info_item long_item">
+                    <p class="cfont">自定義資料夾名稱 : </p>
+                    <input class="l_input" type="text" name="customized_dir_name">
+                </div>
+            </div>
+            <div id="anime1_setting" class="info_card setting_card" style="display: none;">
+                <p class="info_title cfont">Anime1設定</p>
+                <div class="info_item">
+                    <p class="cfont">檢查更新間隔 : </p>
+                    <input class="c_input" type="number" name="check_animate_update">
+                    <p class="cfont">分鐘</p>
+                </div>
+                <div class="info_item long_item">
+                    <p class="cfont">下載資料夾 : </p>
+                    <input class="l_input" type="text" name="download_path">
+                </div>
+                <div class="info_item long_item">
+                    <p class="cfont">自定義檔案名稱 : </p>
+                    <input class="l_input" type="text" name="customized_file_name">
+                </div>
+                <div class="info_item long_item">
+                    <p class="cfont">自定義資料夾名稱 : </p>
+                    <input class="l_input" type="text" name="customized_dir_name">
                 </div>
             </div>
             <button id="submit_setting" class="cfont" onclick="send_setting()">儲存</button>
