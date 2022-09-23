@@ -7,11 +7,12 @@ from subprocess import DEVNULL, run
 from threading import Lock
 from time import sleep
 from typing import Union
+from typing_extensions import Self
 
 from requests import RequestException, get
 from requests.models import Response
 
-from modules import Config, Thread
+from modules import Config, Thread, Cache, TYPE_RESPONSE
 
 logger = getLogger("main")
 download_exception = False
@@ -20,50 +21,39 @@ HEADERS = {
     "User-Agent": Config.download_setting.user_agent
 }
 
-def _req(url: str, timeout: int=5) -> Union[Response, None]:
-    try:
-        r = get(url=url, headers=HEADERS, timeout=timeout)
-        if r and r.ok:
-            return r
-        return None
-    except RequestException as e:
-        logger.error(f"Request Error: {e}")
-        return None
-
 class M3U8:
     progress = 0
 
     @staticmethod
-    def _job(i, download_queue: Queue, progress: list, path: str, lock: Lock) -> None:
-        global download_exception
+    def _job(dwonloader, i, download_queue: Queue, progress: list, path: str, lock: Lock) -> None:
         finish = 0
         while not download_queue.empty():
             try:
                 url: str = download_queue.get()
                 name = url.split("/")[-1]
-                res = get(url, stream=True)
-                total_length = int(res.headers.get('content-length'))
-                if isfile(f"{path}/{name}"):
-                    if getsize(f"{path}/{name}") == total_length:
-                        finish += 1
-                        progress[i] = int(100 * finish)
-                        continue
-                with open(f"{path}/{name}", mode="wb") as video_file:
-                    download_length = 0
-                    lock.acquire()
-                    for data in res.iter_content(8192):
-                        lock.release()
-                        video_file.write(data)
-                        download_length += len(data)
-                        progress[i] = int(100 * finish + 100 * download_length / total_length)
+                with get(url, stream=True) as res:
+                    total_length = int(res.headers.get('content-length'))
+                    if isfile(f"{path}/{name}"):
+                        if getsize(f"{path}/{name}") == total_length:
+                            finish += 1
+                            progress[i] = int(100 * finish)
+                            continue
+                    with open(f"{path}/{name}", mode="wb") as video_file:
+                        download_length = 0
                         lock.acquire()
-                    lock.release()
-                finish += 1
-                progress[i] = int(100 * finish)
+                        for data in res.iter_content(8192):
+                            lock.release()
+                            video_file.write(data)
+                            download_length += len(data)
+                            progress[i] = int(100 * finish + 100 * download_length / total_length)
+                            lock.acquire()
+                        lock.release()
+                    finish += 1
+                    progress[i] = int(100 * finish)
             except RequestException as e:
                 if lock.locked(): lock.release()
                 logger.error(f"Request Error: {e}")
-                download_exception = True
+                dwonloader.download_exception = True
                 return
 
     @staticmethod
@@ -76,7 +66,7 @@ class M3U8:
 
         return: :class:`str`
         """
-        vpx_json = _req(url).json() # 取得檔案網址
+        vpx_json = Cache.cahce_requests(url, return_type=TYPE_RESPONSE).json() # 取得檔案網址
         hosts = sorted(vpx_json["host"], key=lambda x: x.get("weight"), reverse=True) # 將主機依權重排序
         return f"{hosts[0]['host']}{vpx_json['video']['720p']}" # 組合網址
 
@@ -99,7 +89,6 @@ class M3U8:
             是否下載成功。
         """
         try:
-            global download_exception
             download_queue = Queue()
             progress = []
             thread_list = []
@@ -123,15 +112,15 @@ class M3U8:
                     download_queue.put(f"{host_url}/{file_name}")
                     total_block += 1
 
-            download_exception = False
+            self.download_exception = False
             for i in range(thread_number):
                 progress.append(0)
-                thread_list.append(Thread(target=self._job, args=(i, download_queue, progress, temp_path)))
+                thread_list.append(Thread(target=self._job, args=(self, i, download_queue, progress, temp_path)))
                 thread_list[-1].start()
                 lock_list.append(Lock())
 
             temp_progress = sum(progress)
-            while temp_progress < 100 * total_block and download_exception == False: # 更改進度
+            while temp_progress < 100 * total_block and self.download_exception == False: # 更改進度
                 if not lock.acquire(timeout=1):
                     for _lock in lock_list:
                         _lock.acquire()
@@ -142,11 +131,8 @@ class M3U8:
                 temp_progress = sum(progress)
                 self.progress = temp_progress / total_block
                 sleep(1)
-            if download_exception == False:
-                for thread in thread_list:
-                    thread.stop()
-                    thread.join()
-                return False
+            if self.download_exception == True:
+                raise SystemExit
             else:
                 for thread in thread_list:
                     thread.join()

@@ -1,8 +1,10 @@
 import ctypes
+from queue import Queue
 import threading
 from os import system
 from time import sleep
 from typing import Optional
+from typing_extensions import Self
 
 class Thread(threading.Thread):
     """
@@ -29,6 +31,29 @@ class Thread(threading.Thread):
         elif ctypes.pythonapi.PyThreadState_SetAsyncExc(self.ident, ctypes.py_object(SystemExit)) == 1: return
         ctypes.pythonapi.PyThreadState_SetAsyncExc(self.ident, 0)
         raise SystemError("PyThreadState_SetAsyncExc failed")
+
+class ThreadPool():
+    def __init__(self, num: int, job: function) -> None:
+        self.num = num
+        self.job = job
+        self.thread_list = []
+        self.answer_list = []
+        self.input_queue = Queue()
+        self.index = 0
+    
+    def _job(self, input_queue: Queue):
+        while not input_queue.empty():
+            args, kwargs = input_queue.get()
+            answer_index = answer_index
+            self.index += 1
+            self.answer_list[answer_index] = self.job(*args, **kwargs)
+
+    def start(self, args_list: Optional[list]=None, kwargs_list: Optional[list]=None):
+        if args_list != None and kwargs_list != None:
+            if len(args_list) != len(kwargs_list):
+                raise Exception
+        for _ in range(self.num):
+            self.thread_list.append(Thread(self._job, args=()))
 
 def _auto_kill():
     while threading.main_thread().is_alive():
