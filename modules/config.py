@@ -85,8 +85,8 @@ class _Other_Setting(_Str_Dict):
 class _Download_Setting(_Str_Dict):
     user_agent: str
     animate_classify: bool
-    auto_download_connection: int
-    auto_download_thread: int
+    download_connection: int
+    download_thread: int
     download_retry: int
     zerofile: int
     def __init__(self, _config: dict):
@@ -94,8 +94,8 @@ class _Download_Setting(_Str_Dict):
             self[item[0]] = item[1]
         self.user_agent = _config["user_agent"]
         self.animate_classify = _config["animate_classify"]
-        self.auto_download_connection = _config["auto_download_connection"]
-        self.auto_download_thread = _config["auto_download_thread"]
+        self.download_connection = _config["download_connection"]
+        self.download_thread = _config["download_thread"]
         self.download_retry = _config["download_retry"]
         self.zerofile = _config["zerofile"]
 

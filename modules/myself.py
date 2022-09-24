@@ -5,7 +5,6 @@ from urllib.parse import unquote
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 from requests import get
-from requests.exceptions import RequestException, Timeout
 
 from modules import Cache, Config
 
