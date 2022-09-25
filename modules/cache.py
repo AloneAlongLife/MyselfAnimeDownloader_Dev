@@ -43,13 +43,13 @@ TYPE_STR = 2
 
 class Cache:
     @staticmethod
-    def cahce_requests(url: str, timeout: int=5, return_type: int=TYPE_STR, read_from_cache=False, save_to_cache=True) -> Union[bytes, str, Response, None]:
+    def cahce_requests(url: str, timeout: int=5, return_type: int=TYPE_STR, read_from_cache=False, save_to_cache=True, *args, **kwargs) -> Union[bytes, str, Response, None]:
         try:
             if read_from_cache:
                 res = None
-                content = Cache.read_from_cache(url)
+                content = Cache.read_from_cache(url, *args, **kwargs)
             else:
-                res = get(url=url, headers=HEADERS, timeout=timeout)
+                res = get(url=url, headers=HEADERS, timeout=timeout, *args, **kwargs)
                 if not res or not res.ok: return None
                 content = res.content
                 if save_to_cache: Cache.data_to_cache(content, url)
@@ -66,9 +66,9 @@ class Cache:
             return None
 
     @staticmethod
-    def url_to_cahce(url: str, timeout: int=5) -> None:
+    def url_to_cahce(url: str, timeout: int=5, *args, **kwargs) -> None:
         try:
-            Cache.data_to_cache(get(url=url, headers=HEADERS, timeout=timeout).content, url)
+            Cache.data_to_cache(get(url=url, headers=HEADERS, timeout=timeout, *args, **kwargs).content, url)
             return None
         except RequestException as e:
             logger.error(f"Request Error: {e}")
@@ -79,8 +79,12 @@ class Cache:
         if type(data) != bytes: data = data.encode()
         if MYSELF_URL in url:
             file = url.replace(MYSELF_URL, "cache/myself")
+        elif MYSELF_URL.replace("https://", "v.") in url:
+            file = url.replace(MYSELF_URL, "cache/myself_v")
         elif ANIME1_URL in url:
             file = url.replace(ANIME1_URL, "cache/anime1")
+        elif ANIME1_URL.replace("https://", "v.") in url:
+            file = url.replace(ANIME1_URL, "cache/anime1_v")
         else:
             url_rep = url.replace("://", "").split("/")
             url_rep[0] = "cache"
@@ -92,11 +96,15 @@ class Cache:
         return None
 
     @staticmethod
-    def read_from_cache(url: str="", auto_download=True) -> Optional[bytes]:
+    def read_from_cache(url: str="", auto_download=True, *args, **kwargs) -> Optional[bytes]:
         if MYSELF_URL in url:
             file = url.replace(MYSELF_URL, "cache/myself")
+        elif MYSELF_URL.replace("https://", "v.") in url:
+            file = url.replace(MYSELF_URL, "cache/myself_v")
         elif ANIME1_URL in url:
             file = url.replace(ANIME1_URL, "cache/anime1")
+        elif ANIME1_URL.replace("https://", "v.") in url:
+            file = url.replace(ANIME1_URL, "cache/anime1_v")
         else:
             url_rep = url.replace("://", "").split("/")
             url_rep[0] = "cache"
@@ -104,7 +112,7 @@ class Cache:
         file = _retouch_url(file)
         if not isfile(file):
             if auto_download:
-                Cache.url_to_cahce(url)
+                Cache.url_to_cahce(url, *args, **kwargs)
                 if isfile(file): return open(file, mode="rb").read()
             return None
         return open(file, mode="rb").read()

@@ -9,7 +9,7 @@ from time import sleep
 set_logging()
 logger = logging.getLogger("main")
 
-DEV_TEST = False
+DEV_TEST = True
 
 # 檢查設置檔。
 while Config.readied == None: sleep(1)
@@ -29,16 +29,16 @@ if __name__ == "__main__":
         # print(Myself.week_animate())
         # print(len(Myself.search("異世界")))
         downloader = M3U8("https://v.myself-bbs.com/vpx/48642/001", "測試_1", "/tes")
-        downloader_2 = M3U8("https://v.myself-bbs.com/vpx/48642/002", "測試_2", "/tes")
+        # downloader_2 = M3U8("https://v.myself-bbs.com/vpx/48642/002", "測試_2", "/tes")
         downloader.start()
-        swc = False
+        # swc = False
         while not downloader.is_finish():
-            sleep(1)
+            # sleep(1)
             progress_1 = downloader.progress()
             print(f"\r[{'=' * int(50 * progress_1)}]{format(100 * progress_1, '.2f')}%", end="")
-            if progress_1 > 0.5 and not swc:
-                downloader.cancel()
-                break
+            # if progress_1 > 0.5 and not swc:
+            #     downloader.cancel()
+            #     break
                 # swc = True
                 # downloader.pause()
                 # downloader_2.start()
@@ -48,7 +48,7 @@ if __name__ == "__main__":
                 #     print(f"\r[{'=' * int(50 * progress_2)}]{format(100 * progress_2, '.2f')}%", end="")
                 # print()
                 # downloader.resume()
-        downloader.clean_up()
+        # downloader.clean_up()
         exit()
     
     dashboard = Dashboard()

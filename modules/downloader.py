@@ -3,10 +3,11 @@ from os import makedirs
 from os.path import abspath, getsize, isdir, isfile, join
 from shutil import rmtree
 from subprocess import DEVNULL, run
+from urllib.parse import unquote
 from threading import Lock
 from time import sleep
 
-from requests import RequestException, get, head
+from requests import RequestException, get, head, post
 
 from modules import TYPE_RESPONSE, Cache, Config, Json, Thread, ThreadPool
 
@@ -39,15 +40,19 @@ def _get_m3u8_url(url: str) -> str:
 
     return: :class:`str`
     """
-    vpx_json: dict = Cache.cahce_requests(url, return_type=TYPE_RESPONSE).json() # 取得檔案網址
-    host: str = sorted(vpx_json["host"], key=lambda x: x.get("weight"), reverse=True)[0]["host"] # 將主機依權重排序
-    video_url: str = vpx_json['video']['720p']
+    if ".m3u8" in url:
+        video_url = "/".join(url.split("/")[-3:])
+        host = url.replace(video_url, "")
+    else:
+        vpx_json: dict = Cache.cahce_requests(url, return_type=TYPE_RESPONSE).json() # 取得檔案網址
+        host: str = sorted(vpx_json["host"], key=lambda x: x.get("weight"), reverse=True)[0]["host"] # 將主機依權重排序
+        video_url: str = vpx_json['video']['720p']
     file_name = video_url.split("/")[-1]
     path = video_url.replace(f"/{file_name}", "")
     return f"{host}{path}", path, f"{host}{video_url}" # 主機位址, 路徑, 網址
 
 class M3U8:
-    def __init__(self, url: str, file_name: str, out_path: str) -> None:
+    def __init__(self, url: str, file_name: str, out_path: str, cookies=None) -> None:
         """
         url: :class:`str`
             VPX網址。
@@ -65,11 +70,12 @@ class M3U8:
         self.lock_list: list[Lock] = [] # 線程鎖
         self.file_name = _retouch_name(file_name) # 輸出檔案
         self.out_path = _retouch_name(out_path) # 輸出資料夾
+        self.cookies = cookies
         if not isdir(self.out_path):
             makedirs(self.out_path)
         self.host, path, m3u8_url = _get_m3u8_url(url)
 
-        m3u8_data = Cache.cahce_requests(m3u8_url)
+        m3u8_data = Cache.cahce_requests(m3u8_url, cookies=self.cookies)
 
         self.temp_dir_path = f"temp/{path}" # 片段資料夾
         if not isdir(self.temp_dir_path): # 建立資料夾
@@ -137,7 +143,7 @@ class M3U8:
                 self.progress_list[block_id] = 1
         if self.progress_list[block_id] != 1:
             try:
-                with get(f"{self.host}/{file_name}", stream=True, headers=headers) as res:
+                with get(f"{self.host}/{file_name}", stream=True, headers=headers, cookies=self.cookies) as res:
                     if total_length == None:
                         total_length = int(res.headers.get('Content-length'))
                         info = {
@@ -159,12 +165,13 @@ class M3U8:
         if block_id == self.total_block - 1:
             while sum(self.progress_list) < self.total_block: sleep(1)
             run(f"ffmpeg {Config.other_setting.ffmpeg_args} -v error -f concat -i \"{self.temp_dir_path}/ffmpeg_in\" -c copy -y \"" + abspath(join(self.out_path, self.file_name)) + ".mp4\"", shell=False, stdout=DEVNULL, stderr=DEVNULL)
+            self.clean_up()
 
-class M3U8:
-    def __init__(self, url: str, file_name: str, out_path: str) -> None:
+class Amine1:
+    def __init__(self, data_api_req: str, file_name: str, out_path: str) -> None:
         """
-        url: :class:`str`
-            VPX網址。
+        data_api_req: :class:`str`
+            API請求字串。
         file_name: :class:`str`
             輸出檔案名稱。
         out_path: :class:`str`
@@ -181,7 +188,11 @@ class M3U8:
         self.out_path = _retouch_name(out_path) # 輸出資料夾
         if not isdir(self.out_path):
             makedirs(self.out_path)
-        path = f"anime1/{url.split('/')[-2]}"
+
+        req_data = Json.loads(unquote(data_api_req))
+        cookies = post("https://v.anime1.me/api", data={"d": unquote(data_api_req)}).cookies
+        
+        path = f"anime1/{req_data['c']}"
 
         self.temp_dir_path = f"temp/{path}" # 片段資料夾
         if not isdir(self.temp_dir_path): # 建立資料夾
