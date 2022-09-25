@@ -73,12 +73,14 @@ class _Web_Console(_Str_Dict):
 
 class _Other_Setting(_Str_Dict):
     time_zone: d_timezone
+    ffmpeg_args: str
     log_level: str
     version: str
     def __init__(self, _config: dict) -> None:
         for item in _config.items():
             self[item[0]] = item[1]
         self.time_zone = d_timezone(d_timedelta(hours=_config["time_zone"]))
+        self.ffmpeg_args = _config["ffmpeg_args"]
         self.log_level = _config["log_level"]
         self.version = _config["version"]
 

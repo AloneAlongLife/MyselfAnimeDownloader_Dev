@@ -28,6 +28,7 @@
     },
     "other_setting": {
         "time_zone": 8,
+        "ffmpeg_args": "",
         "log_level": "INFO",
         "version": "0.1"
     }

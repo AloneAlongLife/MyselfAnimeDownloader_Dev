@@ -10,10 +10,6 @@ from modules import Cache, Config
 
 logger = getLogger("main")
 
-# 資料節不可包含之字元:\/:*?"<>|
-BAN = "\\/:*?\"<>|"
-# 替代用字元
-REPLACE = "_"
 # 網址
 URL = Config.myself_setting.url
 
@@ -29,16 +25,6 @@ ANIMATE_TABLE = {
 
 # 全形半形轉換表
 HF_CONVERT = [("（", "("), ("）", ")")]
-
-
-def _retouch_name(name: str) -> str:
-    """
-    避免不正當名字出現導致資料夾或檔案無法創建。
-    :param name: str 名字。
-    :return: str
-    """
-    for char in BAN: name = name.replace(char, REPLACE)
-    return name
 
 def google_search_redirect(url: str) -> Optional[str]:
     if "www.google.com/url?" in url:
