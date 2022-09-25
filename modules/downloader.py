@@ -15,8 +15,7 @@ logger = getLogger("main")
 HEADERS = {
     "User-Agent": Config.download_setting.user_agent
 }
-ANI_HEADERS = {"cookie": "e=1664100402; p=eyJpc3MiOiJhbmltZTEubWUiLCJleHAiOjE2NjQxMDAzMDIwMDAsImlhdCI6MTY2NDA4NTkwNTAwMCwic3ViIjoiLzEwNTUvMjMubXA0In0; h=U-rzX64meK3QORJXTLQ-zA;",}
-head("https://shiro.v.anime1.me/1055/23.mp4", headers=ANI_HEADERS)
+
 # 資料節不可包含之字元:\/:*?"<>|
 BAN = "\\/:*?\"<>|"
 # 替代用字元
