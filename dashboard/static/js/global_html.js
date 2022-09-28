@@ -41,7 +41,7 @@ function search_keydown(element, e) {
 
 function send_keyword(keyword, from_cache=true) {
     let xhttp = new XMLHttpRequest();
-    let from = "Myself";
+    let from = "myself";
     let data = {
         "keyword": keyword,
         "cache": from_cache,
@@ -51,7 +51,7 @@ function send_keyword(keyword, from_cache=true) {
         if (this.readyState == 4) {
             try {
                 let raw_data = JSON.parse(this.responseText);
-                if (from == "Myself") {
+                if (from == "myself") {
                     update_animate_info(raw_data);
                 }
             }
@@ -60,7 +60,7 @@ function send_keyword(keyword, from_cache=true) {
             }
         }
     }
-    xhttp.open("POST", window.location.pathname + window.location.search, true);
+    xhttp.open("POST", "/", true);
     xhttp.setRequestHeader("Content-type", "application/json");
     xhttp.setRequestHeader("Request-type", "animate_info");
     xhttp.send(JSON.stringify(data));
@@ -141,7 +141,7 @@ function update_episode_queue(data, check_episode=true) {
                     }
                 }
             }
-            xhttp.open("POST", window.location.pathname + window.location.search, true);
+            xhttp.open("POST", "/", true);
             xhttp.setRequestHeader("Content-type", "application/json");
             xhttp.setRequestHeader("Request-type", "animate_info");
             xhttp.send(JSON.stringify(send_data));

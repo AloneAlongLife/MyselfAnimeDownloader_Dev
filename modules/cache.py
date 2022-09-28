@@ -4,7 +4,7 @@ from os.path import isdir, isfile
 from typing import Optional, Union
 from urllib.parse import unquote
 
-from requests import get
+from requests import get, post
 from requests.exceptions import RequestException, Timeout
 from requests.models import Response
 
@@ -43,13 +43,16 @@ TYPE_STR = 2
 
 class Cache:
     @staticmethod
-    def cahce_requests(url: str, timeout: int=5, return_type: int=TYPE_STR, read_from_cache=False, save_to_cache=True, *args, **kwargs) -> Union[bytes, str, Response, None]:
+    def cache_requests(url: str, timeout: int=5, return_type: int=TYPE_STR, read_from_cache=False, save_to_cache=True, method="GET", *args, **kwargs) -> Union[bytes, str, Response, None]:
         try:
             if read_from_cache:
                 res = None
-                content = Cache.read_from_cache(url, *args, **kwargs)
+                content = Cache.read_from_cache(url, method=method, *args, **kwargs)
             else:
-                res = get(url=url, headers=HEADERS, timeout=timeout, *args, **kwargs)
+                if method == "POST":
+                    res = post(url=url, headers=HEADERS, timeout=timeout, *args, **kwargs)
+                else:
+                    res = get(url=url, headers=HEADERS, timeout=timeout, *args, **kwargs)
                 if not res or not res.ok: return None
                 content = res.content
                 if save_to_cache: Cache.data_to_cache(content, url)
@@ -60,15 +63,18 @@ class Cache:
                 return content
             return res
         except Timeout:
-            return Cache.read_from_cache(url, False)
+            return Cache.read_from_cache(url, False, method=method, *args, **kwargs)
         except RequestException as e:
             logger.error(f"Request Error: {e}")
             return None
 
     @staticmethod
-    def url_to_cahce(url: str, timeout: int=5, *args, **kwargs) -> None:
+    def url_to_cache(url: str, timeout: int=5, method="GET", *args, **kwargs) -> None:
         try:
-            Cache.data_to_cache(get(url=url, headers=HEADERS, timeout=timeout, *args, **kwargs).content, url)
+            if method == "POST":
+                Cache.data_to_cache(post(url=url, headers=HEADERS, timeout=timeout, *args, **kwargs).content, url)
+            else:
+                Cache.data_to_cache(get(url=url, headers=HEADERS, timeout=timeout, *args, **kwargs).content, url)
             return None
         except RequestException as e:
             logger.error(f"Request Error: {e}")
@@ -79,12 +85,12 @@ class Cache:
         if type(data) != bytes: data = data.encode()
         if MYSELF_URL in url:
             file = url.replace(MYSELF_URL, "cache/myself")
-        elif MYSELF_URL.replace("https://", "v.") in url:
-            file = url.replace(MYSELF_URL, "cache/myself_v")
+        elif MYSELF_URL.replace("://", "://v.") in url:
+            file = url.replace(MYSELF_URL.replace("://", "://v."), "cache/myself_v")
         elif ANIME1_URL in url:
             file = url.replace(ANIME1_URL, "cache/anime1")
-        elif ANIME1_URL.replace("https://", "v.") in url:
-            file = url.replace(ANIME1_URL, "cache/anime1_v")
+        elif ANIME1_URL.replace("://", "://v.") in url:
+            file = url.replace(ANIME1_URL.replace("://", "://v."), "cache/anime1_v")
         else:
             url_rep = url.replace("://", "").split("/")
             url_rep[0] = "cache"
@@ -96,7 +102,7 @@ class Cache:
         return None
 
     @staticmethod
-    def read_from_cache(url: str="", auto_download=True, *args, **kwargs) -> Optional[bytes]:
+    def read_from_cache(url: str="", auto_download=True, method="GET", *args, **kwargs) -> Optional[bytes]:
         if MYSELF_URL in url:
             file = url.replace(MYSELF_URL, "cache/myself")
         elif MYSELF_URL.replace("https://", "v.") in url:
@@ -112,7 +118,7 @@ class Cache:
         file = _retouch_url(file)
         if not isfile(file):
             if auto_download:
-                Cache.url_to_cahce(url, *args, **kwargs)
+                Cache.url_to_cache(url, method=method, *args, **kwargs)
                 if isfile(file): return open(file, mode="rb").read()
             return None
         return open(file, mode="rb").read()

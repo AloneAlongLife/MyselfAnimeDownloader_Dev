@@ -7,7 +7,7 @@
     "download_setting": {
         "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.114 Safari/537.36 OPR/89.0.4447.64 (Edition GX-CN)",
         "animate_classify": true,
-        "download_connection": 6,
+        "download_connection": 10,
         "download_thread": 3,
         "download_retry": 3,
         "zerofile": 2
@@ -15,16 +15,16 @@
     "myself_setting": {
         "url": "https://myself-bbs.com",
         "check_animate_update": 5,
-        "customized_file_name": "",
-        "customized_dir_name": "",
-        "download_path": ""
+        "customized_file_name": "[Myself]$N $E集",
+        "customized_dir_name": "[Myself]$N",
+        "download_path": "download"
     },
     "anime1_setting": {
         "url": "https://anime1.me",
         "check_animate_update": 5,
-        "customized_file_name": "",
-        "customized_dir_name": "",
-        "download_path": ""
+        "customized_file_name": "[Anime1]$N $E集",
+        "customized_dir_name": "[Anime1]$N",
+        "download_path": "download"
     },
     "other_setting": {
         "time_zone": 8,

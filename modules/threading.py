@@ -34,6 +34,7 @@ class ThreadPool():
     def __init__(self, num: int, job) -> None:
         self.num = num
         self.job = job
+        self.started = False
         
     def _job(self, thr_id: int):
         while not self.input_queue.empty():
@@ -43,16 +44,18 @@ class ThreadPool():
             self.answer_list[answer_index] = self.job(*args, thread_id=thr_id)
 
     def start(self, args_list: Optional[list]=None) -> None:
-        self.thread_list: list[Thread] = []
-        self.answer_list = []
-        self.input_queue = Queue()
-        self.index = 0
-        for _ in range(len(args_list)):
-            self.answer_list.append(None)
-            self.input_queue.put(args_list.pop(0))
-        for i in range(self.num):
-            self.thread_list.append(Thread(target=self._job, args=(i,)))
-            self.thread_list[-1].start()
+        if self.started == False:
+            self.started = True
+            self.thread_list: list[Thread] = []
+            self.answer_list = []
+            self.input_queue = Queue()
+            self.index = 0
+            for _ in range(len(args_list)):
+                self.answer_list.append(None)
+                self.input_queue.put(args_list.pop(0))
+            for i in range(self.num):
+                self.thread_list.append(Thread(target=self._job, args=(i,)))
+                self.thread_list[-1].start()
     
     def is_alive(self) -> bool:
         for thread in self.thread_list:

@@ -70,7 +70,7 @@
 }
 #top-bar .data img {
     height: 350px;
-    width: 250px;
+    /* width: 250px; */
 }
 #info .data hr {
     width: 0px;

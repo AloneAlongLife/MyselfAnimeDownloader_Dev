@@ -11,69 +11,19 @@ from modules import Cache, Config
 logger = getLogger("main")
 
 # 網址
-URL = Config.myself_setting.url
-
-# 動漫資訊的 Key 對照表
-ANIMATE_TABLE = {
-    "作品類型": "animate_type",
-    "首播日期": "premiere_date",
-    "播出集數": "episode_number",
-    "原著作者": "author",
-    "官方網站": "official_website",
-    "備注": "remarks",
-}
-
-# 全形半形轉換表
-HF_CONVERT = [("（", "("), ("）", ")")]
+URL = Config.anime1_setting.url
 
 def google_search_redirect(url: str) -> Optional[str]:
     if "www.google.com/url?" in url:
         url = unquote(url.split("url=")[1].split("&")[0])
+    if len(url.replace(URL, "").split("/")) == 2:
+        redirect = BeautifulSoup(Cache.cache_requests(url, read_from_cache=True), features="html.parser").select_one("a[href*=\"/?cat\"]").get("href")
+        url = f"{URL}{redirect}"
     return url
 
-class Myself:
+class Anime1:
     @staticmethod
-    def week_animate(read_from_cache: bool=True) -> list:
-        """
-        爬首頁的每週更新表。
-        (index 0 對應星期一)
-
-        return: :class:`list`
-        [
-            [
-                {
-                    "name": 動漫名字,
-                    "url": 動漫網址,
-                    "color": 字體顏色,
-                    "update": 更新集數,
-                },
-                {...}
-            ],
-            [...]
-        ]
-        """
-        res = Cache.cache_requests(url=f"{URL}/portal.php", read_from_cache=read_from_cache)
-        if res == None: return []
-        week_data = []
-        week_elements: list[Tag] = BeautifulSoup(res, features="html.parser").select("#tabSuCvYn div.module.cl.xl.xl1")
-        for day_element in week_elements:
-            day_data = []
-            for element in day_element.find_all("li"):
-                _a: Tag = element.find("a")
-                _fonts: list[Tag] = element.find_all("font")
-                day_data.append(
-                    {
-                        "name": _fonts[0].text,
-                        "url": f"{URL}/{_a.get('href')}",
-                        "color": _fonts[2].get("style")[:-1].split(": ")[1],
-                        "update": _fonts[2].text
-                    }
-                )
-            week_data.append(day_data)
-        return week_data
-
-    @staticmethod
-    def animate_info_table(url: str, read_from_cache: bool=True) -> Optional[dict]:
+    def animate_info_table(url: str) -> Optional[dict]:
         """
         取得動漫資訊
 
@@ -84,41 +34,33 @@ class Myself:
         {
             url: 網址,
             name: 名字,
-            animate_type: 作品類型,
             premiere_date: 首播日期,
-            episode_number: 播出集數,
-            author: 原著作者,
-            official_website: 官方網站,
-            remarks: 備注,
-            synopsis: 簡介,
-            image: 封面連結,
+            episode_number: 目前播出集數,
             episode_data: [{name: 集數, url: 網址},{...}]
         }
         """
         url = google_search_redirect(url)
         if URL not in url: return None
-        res = Cache.cache_requests(url, read_from_cache=read_from_cache)
+        res = Cache.cache_requests(url)
         if res == None: return None
         # 一般信息
-        data = {"url": url}
-        res: BeautifulSoup = BeautifulSoup(res, features="html.parser")
-        all_info: list[Tag] = res.select("div.info_info li")
-        for info in all_info:
-            key, value = info.text.split(": ")
-            data[ANIMATE_TABLE[key]] = value
-        img_src = res.select_one("div.info_img_box img").get("src")
-        Cache.url_to_cache(img_src)
-        data["name"] = res.find("title").text.split("【")[0]
-        data["image"] = img_src
-        data["synopsis"] = res.find("div", id="info_introduction_text").text
+        res = BeautifulSoup(res, features="html.parser")
+        data = {
+            "url": url,
+            "name": res.find("h1", class_="page-title").text
+        }
+        all_episodes: list[Tag] = res.select("article")
+        all_episodes.reverse()
+        data["premiere_date"] = all_episodes[0].find("time").text
+        data["episode_number"] = f"共 {len(all_episodes)} 話"
         # 影片資料
-        _REPLACE_LIST = [("player/play", "vpx"), ("\r", ""), ("\n", "")]
         episode_data = []
-        all_episodes: list[Tag] = res.select("ul.main_list a[href=\"javascript:;\"]")
         for episode in all_episodes:
-            name = episode.text
-            data_url = episode.find_next("a").get("data-href")
-            for _replace in _REPLACE_LIST: data_url = data_url.replace(*_replace) # 更改連結&移除字元 \r \n
+            content_a: Tag = episode.find_all('a')[1]
+            ep_start = content_a.text.find("[") + 1
+            ep_end = content_a.text.find("]")
+            name = f"第 {content_a.text[ep_start:ep_end]} 集"
+            data_url = content_a.get("href")
             episode_data.append({"name": name, "url": data_url})
         data["episode_data"] = episode_data
         return data

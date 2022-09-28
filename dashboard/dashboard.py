@@ -42,7 +42,7 @@ def _deal_requeste(type_of: str, data: str | bytes, raw_requests: Request):
                 keyword = google_search_redirect(keyword)
                 if MYSELF_URL in keyword:
                     return Json.dumps({"type": "url", "data": Myself.animate_info_table(keyword, raw_requests.json["cache"])})
-            if from_ == "Myself":
+            if from_ == "myself":
                 return Json.dumps({"type": "search", "data": Myself.search(keyword)})
     except:
         return ("", 404)

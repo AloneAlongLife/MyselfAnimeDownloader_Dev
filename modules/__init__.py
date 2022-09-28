@@ -6,4 +6,5 @@ from .json import *
 from .logging_config import *
 from .downloader import *
 from .myself import *
+from .anime1 import *
 from .download_queue import *
