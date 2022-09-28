@@ -1,4 +1,6 @@
 from logging import getLogger
+from time import time
+from turtle import title
 from typing import Optional
 from urllib.parse import unquote
 
@@ -66,9 +68,9 @@ class Anime1:
         return data
 
     @staticmethod
-    def finish_list(read_from_cache: bool=True) -> dict:
+    def total_list() -> dict:
         """
-        取得完結列表頁面的動漫資訊。
+        取得所有動漫資訊。
 
         return: :class:`dict`
         {
@@ -79,28 +81,21 @@ class Anime1:
             ]
         }
         """
-        res = Cache.cache_requests(url=f"{URL}/portal.php?mod=topic&topicid=8", read_from_cache=read_from_cache)
-        if res == None: return []
+        total_data: list = get(url=f"https://d1zquzjgwo9yb.cloudfront.net/?_={int(time())}").json()
+        if total_data == None: return []
+        CONV_DATA = {
+            "冬": "01月(冬)",
+            "春": "04月(春)",
+            "夏": "07月(夏)",
+            "秋": "10月(秋)"
+        }
         data = {}
-        all_years: list[Tag] = BeautifulSoup(res, features="html.parser").find_all("div", class_="tab-title title column cl")
-        for year in all_years:
-            year_list = []
-            all_seasons: list[Tag] = year.find_all("div", class_="blocktitle title")
-            for season in all_seasons:
-                season_data = {}
-                title = season.text
-                for _replace in HF_CONVERT: title = title.replace(*_replace)
-                season_data["title"] = title
-                all_animates: list[Tag] = season.find_next("div", class_="module cl xl xl1").find_all("a")
-                animate_list = []
-                for animate in all_animates:
-                    animate_list.append({"name": animate.text, "url": f"{URL}/{animate.get('href')}"})
-                season_data["data"] = animate_list
-                year_list.append(season_data)
-            year_list.reverse()
-            data[year_list[0]["title"].split("年")[0]] = year_list
-        return data
-    
+        for episode in total_data:
+            year = episode[3]
+            title = f"{year}年{CONV_DATA[episode[4]]}"
+            name = 
+            url = f"{URL}/?cat={episode[0]}"
+            
     @staticmethod
     def search(keyword: str) -> list:
         """
