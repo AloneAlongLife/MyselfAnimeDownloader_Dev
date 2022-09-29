@@ -1,9 +1,9 @@
 import logging
 from urllib.parse import unquote
 
-from flask import (Flask, Request, make_response, render_template,
-                   request)
-from modules import Cache, Config, Json, Myself, Download_Queue, google_search_redirect
+from flask import Flask, Request, make_response, render_template, request
+from modules import (Anime1, Cache, Config, Download_Queue, Json, Myself,
+                     google_search_redirect)
 
 logger = logging.getLogger("main")
 
@@ -35,15 +35,21 @@ def _deal_requeste(type_of: str, data: str | bytes, raw_requests: Request):
                 "myself_setting": Config.myself_setting.to_str(),
                 "anime1_setting": Config.anime1_setting.to_str()
             }
+        elif type_of == "get_queue":
+            return Download_Queue.gen_dict()
         elif type_of == "animate_info":
             keyword = raw_requests.json["keyword"]
             from_ = raw_requests.json["from"]
             if "://" in keyword:
                 keyword = google_search_redirect(keyword)
                 if MYSELF_URL in keyword:
-                    return Json.dumps({"type": "url", "data": Myself.animate_info_table(keyword, raw_requests.json["cache"])})
+                    return Json.dumps({"type": "url", "from": "myself", "data": Myself.animate_info_table(keyword, raw_requests.json["cache"])})
+                elif ANIME1_URL in keyword:
+                    return Json.dumps({"type": "url", "from": "anime1", "data": Anime1.animate_info_table(keyword)})
             if from_ == "myself":
                 return Json.dumps({"type": "search", "data": Myself.search(keyword)})
+            elif from_ == "anime1":
+                return Json.dumps({"type": "search", "data": Anime1.search(keyword)})
     except:
         return ("", 404)
     return ("", 204)

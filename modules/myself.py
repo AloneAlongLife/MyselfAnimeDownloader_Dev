@@ -130,33 +130,29 @@ class Myself:
 
         return: :class:`dict`
         {
-            "2022": [
-                {"title": "2022年01月(冬)","data": [{"name": "失格紋的最強賢者", "url": "動漫網址"}, {...}]},
-                {"title": "2022年04月(春)", "data": [{...}]}.
-                {...}
-            ]
+            "2022": {
+                "2022年01月(冬)": [{"name": "失格紋的最強賢者", "url": "動漫網址"}, {...}],
+                "2022年04月(春)": [{...}],
+            }
         }
         """
         res = Cache.cache_requests(url=f"{URL}/portal.php?mod=topic&topicid=8", read_from_cache=read_from_cache)
-        if res == None: return []
+        if res == None: return {}
         data = {}
         all_years: list[Tag] = BeautifulSoup(res, features="html.parser").find_all("div", class_="tab-title title column cl")
         for year in all_years:
-            year_list = []
+            year_data = {}
             all_seasons: list[Tag] = year.find_all("div", class_="blocktitle title")
             for season in all_seasons:
-                season_data = {}
                 title = season.text
+                year_num = title.split("年")[0]
                 for _replace in HF_CONVERT: title = title.replace(*_replace)
-                season_data["title"] = title
                 all_animates: list[Tag] = season.find_next("div", class_="module cl xl xl1").find_all("a")
                 animate_list = []
                 for animate in all_animates:
                     animate_list.append({"name": animate.text, "url": f"{URL}/{animate.get('href')}"})
-                season_data["data"] = animate_list
-                year_list.append(season_data)
-            year_list.reverse()
-            data[year_list[0]["title"].split("年")[0]] = year_list
+                year_data[title] = animate_list
+            data[year_num] = year_data
         return data
     
     @staticmethod

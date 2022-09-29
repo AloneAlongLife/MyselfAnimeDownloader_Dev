@@ -82,11 +82,13 @@
     border-width: 1px;
     border-color: rgb(44, 44, 44);
     border-radius: 8px;
-    /* display: flex; */
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
 }
 #home .table .progress_bar {
     height: 48px;
-    margin: 8px;
+    margin: 0px 8px 8px 8px;
     border-style: solid;
     border-width: 1px;
     border-color: rgb(77, 77, 77);
@@ -97,6 +99,9 @@
     /* background-color: rgb(77, 77, 77); */
     overflow: hidden;
     /* justify-items: center; */
+}
+#home .table .progress_bar:nth-child(1) {
+    margin-top: 8px;
 }
 #home .table .progress_bar .progress_title {
     display: flex;

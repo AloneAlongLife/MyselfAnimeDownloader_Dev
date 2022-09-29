@@ -176,6 +176,7 @@ class Downloader():
         self.clean_up()
     
     def progress(self):
+        "0~1"
         return sum(self.progress_list) / self.total_block
     
     def is_finish(self):

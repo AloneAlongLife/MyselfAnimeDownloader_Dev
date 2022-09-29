@@ -45,12 +45,19 @@ def download_job(thread_id: int):
             continue
         uuid = None
         legal_uuid_queue = UUID_QUEUE[:Config.download_setting.download_thread]
-        for _uuid in legal_uuid_queue:
-            if _uuid not in ACTIVATE_UUID:
-                ACTIVATE_UUID[thread_id] = _uuid
-                uuid = _uuid
-                break
-        if uuid == None:
+        if ACTIVATE_UUID[thread_id] == None:
+            for _uuid in legal_uuid_queue:
+                if _uuid not in ACTIVATE_UUID:
+                    ACTIVATE_UUID[thread_id] = _uuid
+                    uuid = _uuid
+                    break
+            if uuid == None:
+                sleep(1)
+                continue
+        else:
+            uuid = ACTIVATE_UUID[thread_id]
+            if uuid not in legal_uuid_queue:
+                ACTIVATE_UUID[thread_id] = None
             sleep(1)
             continue
 
@@ -62,9 +69,21 @@ def download_job(thread_id: int):
             legal_uuid_queue = UUID_QUEUE[:Config.download_setting.download_thread]
             sleep(1)
         if downloader.is_finish():
-            FINISH_UUID[uuid] = time()
-            UUID_QUEUE.remove(uuid)
-            ACTIVATE_UUID.remove(uuid)
+            if downloader.download_exception:
+                data["exception"] += 1
+                if data["exception"] > Config.download_setting.download_retry:
+                    downloader.clean_up()
+                    data["fail"] = True
+                    FINISH_UUID[uuid] = time()
+                    UUID_QUEUE.remove(uuid)
+                    ACTIVATE_UUID[thread_id] = None
+                else:
+                    downloader = Downloader(data["url"], data["file_name"], data["dir_path"])
+                    data["downloader"] = downloader
+            else:
+                FINISH_UUID[uuid] = time()
+                UUID_QUEUE.remove(uuid)
+                ACTIVATE_UUID[thread_id] = None
         else:
             downloader.pause()
 
@@ -85,7 +104,8 @@ class Download_Queue:
 
         video_data = {
             "url": url,
-            "exception": 0
+            "exception": 0,
+            "fail": False
         }
         if MYSELF_URL in url:
             video_data["type"] = "myself"
@@ -95,12 +115,13 @@ class Download_Queue:
             video_data["type"] = "anime1"
             animate_data = Anime1.animate_info_table(url)
             dir_path = Config.anime1_setting.download_path
-        video_data["downloader"] = Downloader(video_url)
         dir_name = gen_name(video_data["type"], "dir", episode, animate_data)
         if Config.download_setting.animate_classify:
             dir_path = join(dir_path, dir_name)
+        file_name = gen_name(video_data["type"], "file", episode, animate_data)
         video_data["dir_path"] = dir_path
-        video_data["file_name"] = gen_name(video_data["type"], "file", episode, animate_data)
+        video_data["file_name"] = file_name
+        video_data["downloader"] = Downloader(video_url, file_name, dir_path)
 
         DOWNLOAD_DATA[download_uuid] = video_data
         UUID_QUEUE.append(download_uuid)
@@ -145,6 +166,25 @@ class Download_Queue:
         cuuid_queue[origin_index] = lower_uuid
         UUID_QUEUE = cuuid_queue.copy()
 
+    @staticmethod
+    def gen_dict():
+        sort_list = list(FINISH_UUID.keys()) + UUID_QUEUE
+        data = {}
+        for uuid in sort_list:
+            downloader: Downloader = DOWNLOAD_DATA[uuid]["downloader"]
+            temp_data = {
+                "name": DOWNLOAD_DATA[uuid]["file_name"],
+                "progress": format(min(100 * downloader.progress(), 100), ".2f"),
+                "status": downloader.status(),
+                "fail": DOWNLOAD_DATA[uuid]["fail"]
+            }
+            data[uuid] = temp_data
+        return {
+            "sort_list": sort_list,
+            "data": data
+        }
+
 for i in range(Config.download_setting.download_thread):
     Thread(target=download_job, name=f"AnimateDownloadThread_{i}", args=(i,)).start()
     ACTIVATE_UUID.append("")
+Thread(target=auto_clear_job, name=f"AnimateClearThread").start()

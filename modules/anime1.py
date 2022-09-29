@@ -74,15 +74,14 @@ class Anime1:
 
         return: :class:`dict`
         {
-            "2022": [
-                {"title": "2022年01月(冬)","data": [{"name": "失格紋的最強賢者", "url": "動漫網址"}, {...}]},
-                {"title": "2022年04月(春)", "data": [{...}]}.
-                {...}
-            ]
+            "2022": {
+                "2022年01月(冬)": [{"name": "失格紋的最強賢者", "url": "動漫網址"}, {...}],
+                "2022年04月(春)": [{...}],
+            }
         }
         """
         total_data: list = get(url=f"https://d1zquzjgwo9yb.cloudfront.net/?_={int(time())}").json()
-        if total_data == None: return []
+        if total_data == None: return {}
         CONV_DATA = {
             "冬": "01月(冬)",
             "春": "04月(春)",
@@ -91,10 +90,15 @@ class Anime1:
         }
         data = {}
         for episode in total_data:
-            year = episode[3]
-            title = f"{year}年{CONV_DATA[episode[4]]}"
-            name = 
+            year = episode[3].split("/")[0]
+            season = episode[4].split("/")[0].replace(year, "")
+            title = f"{year}年{CONV_DATA[season]}"
+            name = episode[1]
             url = f"{URL}/?cat={episode[0]}"
+            if data.get(year) == None: data[year] = {}
+            if data[year].get(title) == None: data[year][title] = []
+            data[year][title].append({"name": name, "url": url})
+        return data
             
     @staticmethod
     def search(keyword: str) -> list:
@@ -110,20 +114,16 @@ class Anime1:
             {...}
         ]
         """
-        first_url = get(url=f"{URL}/search.php?mod=forum&srchtxt={keyword}&searchsubmit=yes").url
-        res = Cache.cache_requests(first_url, save_to_cache=False)
-        if res == None:
-            return []
-        result_pages: list[BeautifulSoup] = [BeautifulSoup(res, features="html.parser")]
-        result_num = int(result_pages[0].find("div", class_="sttl mbn").text[:-4].split(" ")[-1])
-        if result_num == 0: return []
+        total_data: list = get(url=f"https://d1zquzjgwo9yb.cloudfront.net/?_={int(time())}").json()
+        if total_data == None: return []
         data = []
-        page_num = result_num // 20 + 1
-        for i in range(2, page_num + 1):
-            result_pages.append(BeautifulSoup(Cache.cache_requests(f"{first_url}&page={i}", save_to_cache=False), features="html.parser"))
-        for result_page in result_pages:
-            for animate_element in result_page.select("#threadlist li"):
-                data.append({"title": animate_element.find("h3").text.replace("\n", "").lstrip(), "url": f"{URL}/thread-{animate_element['id']}-1-1.html"})
+        for episode in total_data:
+            name = episode[1]
+            for key in keyword.split(" "):
+                if key in name:
+                    url = f"{URL}/?cat={episode[0]}"
+                    data.append({"title": name, "url": url})
+                    break
         return data
 
 if __name__ == "__main__":

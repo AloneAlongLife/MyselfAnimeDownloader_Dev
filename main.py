@@ -9,7 +9,8 @@ from time import sleep
 set_logging()
 logger = logging.getLogger("main")
 
-DEV_TEST = True
+# DEV_TEST = True
+DEV_TEST = False
 
 # 檢查設置檔。
 while Config.readied == None: sleep(1)

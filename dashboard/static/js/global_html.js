@@ -34,14 +34,14 @@ function search_keydown(element, e) {
         if (element.value == "") {return;}
         show_page("loading");
         window.location.hash = "#info"
-        send_keyword(element.value);
+        from = element.previousElementSibling.value
+        send_keyword(element.value, from);
         element.value = "";
     }
 }
 
-function send_keyword(keyword, from_cache=true) {
+function send_keyword(keyword, from, from_cache=true) {
     let xhttp = new XMLHttpRequest();
-    let from = "myself";
     let data = {
         "keyword": keyword,
         "cache": from_cache,
@@ -51,9 +51,7 @@ function send_keyword(keyword, from_cache=true) {
         if (this.readyState == 4) {
             try {
                 let raw_data = JSON.parse(this.responseText);
-                if (from == "myself") {
-                    update_animate_info(raw_data);
-                }
+                update_animate_info(raw_data);
             }
             catch {
                 show_page("search");
@@ -73,16 +71,18 @@ function update_animate_info(raw_data) {
         return;
     }
     if (raw_data["type"] == "url") {
-        for (let i = 0; i < _ID_LIST.length; i++) {
-            document.getElementById("info_" + _ID_LIST[i]).textContent = animate_data[_ID_LIST[i]];
-            if (_ID_LIST[i] == "official_website" || _ID_LIST[i] == "url") {
-                document.getElementById("info_" + _ID_LIST[i]).href = animate_data[_ID_LIST[i]];
+        if (raw_data["from"] == "myself") {
+            for (let i = 0; i < _ID_LIST.length; i++) {
+                document.getElementById("info_" + _ID_LIST[i]).textContent = animate_data[_ID_LIST[i]];
+                if (_ID_LIST[i] == "official_website" || _ID_LIST[i] == "url") {
+                    document.getElementById("info_" + _ID_LIST[i]).href = animate_data[_ID_LIST[i]];
+                }
             }
-        }
-        document.getElementById("info_img").src = `/cache/img?url=${encodeURI(animate_data["image"])}`;
-        show_page("data");
+            document.getElementById("info_img").src = `/cache/img?url=${encodeURI(animate_data["image"])}`;
+            show_page("data");
 
-        update_episode_queue(animate_data);
+            update_episode_queue(animate_data);
+        }
     }
     else {
         let results = document.getElementById("search_results");

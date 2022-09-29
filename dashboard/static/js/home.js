@@ -29,34 +29,37 @@ function createElement(el, options={}){
     return element;
 }
 
-async function update_queue() {
+function get_queue() {
+    let xhttp = new XMLHttpRequest();
+    let data = {}
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4) {
+            let raw_data = JSON.parse(this.responseText);
+            update_queue(raw_data);
+        }
+    }
+    xhttp.open("POST", "/", true);
+    xhttp.setRequestHeader("Content-type", "application/json");
+    xhttp.setRequestHeader("Request-type", "send_setting_form");
+    xhttp.send(JSON.stringify(data));
+}
+
+async function update_queue(raw_data) {
     try {
-        let response = await fetch(document.location.origin + "/api/v1.0/queue");
-        let data = JSON.parse(await response.text());
-        for (key in data) {
-            let info = data[key];
-            let id = key;
+        let sort_list = raw_data["sort_list"];
+        let data = raw_data["data"];
+        for (let i = 0; i < sort_list.length; i++) {
+            let uuid = sort_list[i];
+            let info = data[uuid]
             let name = info.name;
             let progress = info.progress;
+            let status = info.status;
+            let fail = info.fail;
             if (document.querySelector(`#${id}`) == null) {
-                if (progress == 100) {
+                if (status == "finish") {
                     continue;
                 }
-                let progress_bar = createElement("div", {className: "progress_bar", id: id});
-
-                let progress_title = createElement("div", {className: "progress_title"});
-                progress_title.appendChild(createElement("p", {className: "cfont", textContent: name}));
-                progress_title.appendChild(createElement("div", {className: "empty"}));
-                progress_title.appendChild(createElement("button", {className: "material-icons", textContent: "pause"}));
-                progress_title.appendChild(createElement("button", {className: "material-icons", textContent: "stop"}));
-                progress_title.appendChild(createElement("p", {className: "present cfont", textContent: `${progress}%`}));
-
-                let progress_e = createElement("div", {className: "progress"});
-                progress_e.appendChild(createElement("div", {className: "in"}));
-
-                progress_bar.appendChild(progress_title);
-                progress_bar.appendChild(progress_e);
-
+                let progress_bar = gen_progress_bar();
                 document.querySelector(".queue").appendChild(progress_bar);
             }
             document.querySelector(`#${id} > div.progress_title > p.present.cfont`).textContent = `${progress}%`;
@@ -64,6 +67,26 @@ async function update_queue() {
         }
     }
     catch {}
+}
+function gen_progress_bar(id, name, progress) {
+    let progress_bar = createElement("div", {className: "progress_bar", id: id});
+
+    let progress_title = createElement("div", {className: "progress_title"});
+    progress_title.appendChild(createElement("p", {className: "cfont", textContent: name}));
+    progress_title.appendChild(createElement("div", {className: "empty"}));
+    progress_title.appendChild(createElement("button", {className: "material-icons upper", textContent: "arrow_drop_up"}));
+    progress_title.appendChild(createElement("button", {className: "material-icons lower", textContent: "arrow_drop_down"}));
+    progress_title.appendChild(createElement("button", {className: "material-icons pause", textContent: "pause"}));
+    progress_title.appendChild(createElement("button", {className: "material-icons stop", textContent: "stop"}));
+    progress_title.appendChild(createElement("p", {className: "present cfont", textContent: `${progress}%`}));
+
+    let progress_e = createElement("div", {className: "progress"});
+    progress_e.appendChild(createElement("div", {className: "in"}));
+
+    progress_bar.appendChild(progress_title);
+    progress_bar.appendChild(progress_e);
+
+    return progress_bar
 }
 
 function send_setting() {
