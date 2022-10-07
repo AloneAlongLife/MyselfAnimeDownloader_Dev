@@ -5,6 +5,7 @@
         <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0">
         <link rel="icon" href="../static/img/favicon.ico">
         <link rel="stylesheet" href="../static/css/global.css">
+        <link rel="stylesheet" href="../static/css/index.css">
         <link rel="stylesheet" href="../static/css/side-bar.css">
         <link rel="stylesheet" href="../static/css/top-bar.css">
         <link rel="stylesheet" href="../static/css/home.css">
@@ -17,7 +18,8 @@
         <script src="../static/js/top-bar.js"></script>
         <script src="../static/js/home.js"></script>
         <script src="../static/js/info.js"></script>
-        <title>MyselfAnimeDownloader</title>
+        <script src="../static/js/search.js"></script>
+        <title>AnimeDownloader</title>
     </head>
     <body onhashchange="hash_change()">
         <ih id="top-bar" include-html="top-bar.html"></ih>
@@ -27,8 +29,9 @@
         <ih class="content" id="data"></ih>
     </body>
     <script>
+        var last_select_episode = 1;
         includeHTML();
-        onload();
+        index_onload();
         home_onload();
         hash_change();
     </script>

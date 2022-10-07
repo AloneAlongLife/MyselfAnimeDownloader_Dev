@@ -61,7 +61,7 @@ class Anime1:
             content_a: Tag = episode.find_all('a')[1]
             ep_start = content_a.text.find("[") + 1
             ep_end = content_a.text.find("]")
-            name = f"第 {content_a.text[ep_start:ep_end]} 集"
+            name = f"第 {content_a.text[ep_start:ep_end]} 話"
             data_url = content_a.get("href")
             episode_data.append({"name": name, "url": data_url})
         data["episode_data"] = episode_data
@@ -118,9 +118,9 @@ class Anime1:
         if total_data == None: return []
         data = []
         for episode in total_data:
-            name = episode[1]
+            name: str = episode[1]
             for key in keyword.split(" "):
-                if key in name:
+                if key.lower() in name.lower():
                     url = f"{URL}/?cat={episode[0]}"
                     data.append({"title": name, "url": url})
                     break

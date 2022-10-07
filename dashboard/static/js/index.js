@@ -2,7 +2,7 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function onload() {
+function index_onload() {
     return;
 }
 

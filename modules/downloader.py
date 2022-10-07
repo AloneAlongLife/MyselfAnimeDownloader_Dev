@@ -35,6 +35,17 @@ def _retouch_name(name: str) -> str:
     for char in BAN: name = name.replace(char, REPLACE)
     return name
 
+def _retouch_dir(name: str) -> str:
+    """
+    避免不正當名字出現導致資料夾或檔案無法創建。
+    :param name: str 名字。
+    :return: str
+    """
+    for char in BAN:
+        if char != "\\" and char != "/":
+            name = name.replace(char, REPLACE)
+    return name
+
 def _get_m3u8_url(url: str) -> str:
     """
     取得檔案位置
@@ -65,6 +76,7 @@ class Downloader():
         out_path: :class:`str`
             輸出路徑。
         """
+        # logger.debug(f"Downloader Reveive: {url} {file_name} {out_path}")
         self.download_exception = False # 發生例外
         self._cancel = False # 取消下載
         self._pause = False # 是否暫停
@@ -73,7 +85,7 @@ class Downloader():
         self.args_list = [] # (下載網址, 標號)
         self.lock_list: list[Lock] = [] # 線程鎖
         self.file_name = _retouch_name(file_name) # 輸出檔案
-        self.out_path = _retouch_name(out_path) # 輸出資料夾
+        self.out_path = _retouch_dir(out_path) # 輸出資料夾
         self.finish_block = 0
 
         self.url = url
@@ -84,7 +96,7 @@ class Downloader():
         if self.type == "myself":
             self.cookies = cookies
         elif self.type == "anime1":
-            data_apireq = BeautifulSoup(get(self.url).content.decode()).select_one("video[data-apireq*=\"\"]").get("apireq")
+            data_apireq = BeautifulSoup(get(self.url).content.decode(), features="html.parser").select_one("video[data-apireq*=\"\"]").get("data-apireq")
             req_data = Json.loads(unquote(data_apireq))
             res = post("https://v.anime1.me/api", data={"d": unquote(data_apireq)})
             self.cookies = res.cookies
@@ -146,7 +158,7 @@ class Downloader():
             return "cancel"
         elif self.is_finish():
             return "finish"
-        elif self.pause():
+        elif self._pause:
             return "pause"
         return "running"
     
@@ -154,7 +166,7 @@ class Downloader():
         self.thread_pool.start(self.args_list)
 
     def pause(self):
-        if self._pause == True: return
+        if self._pause: return
         self._pause = True
         for lock in self.lock_list:
             lock.acquire()
@@ -171,6 +183,7 @@ class Downloader():
         except: pass
 
     def cancel(self):
+        if self._cancel: return
         self._cancel = True
         self.thread_pool.join()
         self.clean_up()
@@ -191,7 +204,10 @@ class Downloader():
         if isfile(info_data):
             info: dict = Json.load(info_data)
             total_length = info["total_length"]
-            download_length = getsize(video_data)
+            try:
+                download_length = getsize(video_data)
+            except:
+                download_length = 0
             if total_length <= download_length:
                 self.progress_list[block_id] = 1
         if self.progress_list[block_id] != 1:
@@ -228,9 +244,9 @@ class Downloader():
         self.finish_block += 1
         if block_id == self.total_block - 1:
             while self.finish_block < self.total_block:
-                if self.download_exception:
+                if self.download_exception or self._cancel:
                     return
-                sleep(1)
+                sleep(0.2)
             if self.type == "myself":
                 run(f"ffmpeg {Config.other_setting.ffmpeg_args} -v error -f concat -i \"{self.temp_dir_path}/comp_in\" -c copy -y \"" + abspath(join(self.out_path, self.file_name)) + ".mp4\"", shell=False, stdout=DEVNULL, stderr=DEVNULL)
             elif self.type == "anime1":

@@ -25,8 +25,14 @@ if __name__ == "__main__":
     if not isdir("temp"): makedirs("temp") # 存放影片待合成片段(.ts)
 
     if DEV_TEST:
-        from modules import Anime1
-        print(Anime1.animate_info_table("https://anime1.me/category/2022年夏季/黑之召喚士"))
+        # from modules import Anime1
+        # print(Anime1.animate_info_table("https://anime1.me/category/2022年夏季/黑之召喚士"))
+        from modules import Downloader
+        downloader = Downloader("https://v.myself-bbs.com/vpx/46195/001", "[Myself]HELLO WORLD 01", "download\\[Myself]HELLO WORLD")
+        downloader.start()
+        while not downloader.is_finish():
+            print(f"\r{format(downloader.progress() * 100, '.2f')}%", end="")
+            sleep(1)
         exit()
     
     dashboard = Dashboard()

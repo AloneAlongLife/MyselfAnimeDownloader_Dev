@@ -51,6 +51,21 @@
     color: rgb(255, 255, 255);
 }
 
+#top-bar .source-selector button {
+    font-size: 14px;
+    width: 60px;
+    height: 24px;
+    border-style: solid;
+    border-width: 1px;
+    background-color: transparent;
+}
+#top-bar .source-selector button:first-child {
+    border-radius: 4px 0px 0px 4px;
+}
+#top-bar .source-selector button:last-child {
+    border-radius: 0px 4px 4px 0px;
+}
+
 @media (max-aspect-ratio: 1/1) {
     #top-bar {
         z-index: 1;

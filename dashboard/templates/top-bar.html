@@ -2,5 +2,9 @@
 <img src="../static/img/logo.png" onclick="window.location.hash='#home'"></img>
 <div class="top-bar-title cfont" onclick="window.location.hash='#home'"><b class="font">MyselfAnimeDownloader Web</b> 版</div>
 <div class="top-bar-empty-2"></div>
+<div class="source-selector">
+    <button class="source-selected" onclick="update_source(this)">Myself</button>
+    <button onclick="update_source(this)">Anime1</button>
+</div>
 <div class="material-icons search_text"><p>search</p></div>
 <input autocomplete="off" class="search_box cfont" id="top_bar_search_box" type="text" placeholder="Search..." onkeydown="search_keydown(this, event)">

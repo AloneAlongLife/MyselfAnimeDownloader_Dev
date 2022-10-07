@@ -1,6 +1,10 @@
 <div class="page search">
     <div class="material-icons search_text"><p>search</p></div>
     <input autocomplete="off" class="search_box cfont" id="top_bar_search_box" type="text" placeholder=" 搜尋名稱或網址..." onkeydown="search_keydown(this, event)">
+    <div class="source-selector">
+        <button class="source-selected" onclick="update_source(this)">Myself</button>
+        <button onclick="update_source(this)">Anime1</button>
+    </div>
 </div>
 <div class="page loading" style="display: none;">
     <div class="ring_text font">Loading...</div>
@@ -40,7 +44,7 @@
                         <p id="info_author" class="cfont info_text"></p>
                     </div>
                     <div class="info_box">
-                        <p class="cfont info_text">Myself連結 :</p>
+                        <p class="cfont info_text">Myself/Anime1連結 :</p>
                         <a id="info_url" class="cfont info_text" target="_blank"></a>
                     </div>
                     <div class="info_box">
@@ -83,7 +87,7 @@
                 </div>
                 <hr class="row_hr">
                 <div class="episode_send">
-                    <button class="cfont">確定</button>
+                    <button class="cfont" onclick="send_download_queue();select('none');">確定</button>
                     <button class="cfont" onclick="select('none')">取消</button>
                 </div>
             </div>

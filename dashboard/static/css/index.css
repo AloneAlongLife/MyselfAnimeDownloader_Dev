@@ -1,0 +1,18 @@
+.source-selector {
+    display: flex;
+    justify-content: left;
+}
+.source-selector button {
+    border-color: rgb(77, 77, 77);
+    color: rgb(77, 77, 77);
+    cursor: pointer;
+    transition: 0.5s;
+}
+.source-selector button:hover {
+    border-color: rgb(144, 144, 144);
+    color: rgb(144, 144, 144);
+}
+.source-selector button.source-selected {
+    border-color: rgb(255, 255, 255);
+    color: rgb(255, 255, 255);
+}

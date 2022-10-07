@@ -5,7 +5,7 @@ function select(input) {
     else if (input == "none") {
         input = `!1-${document.querySelectorAll("div.episode_box > input").length}`;
     }
-    else {
+    else if (input == "input"){
         input = document.querySelector("div.episode_selector > input").value;
         document.querySelector("div.episode_selector > input").value = "";
     }
@@ -20,8 +20,8 @@ function select(input) {
                 select_str = select_str.slice(1);
             }
             select_str = select_str.split("-");
-            let start = parseInt(select_str[0]);
-            let end = parseInt(select_str[1]);
+            let start = Math.min(parseInt(select_str[0]), parseInt(select_str[1]));
+            let end = Math.max(parseInt(select_str[0]), parseInt(select_str[1]));
 
             let total_episode = document.querySelectorAll("div.episode_box > input");
             let len = total_episode.length;
@@ -30,7 +30,7 @@ function select(input) {
             if (start < 0) {start = 0;}
 
             if (end < 0) {end = len + end + 1;}
-            if (end > len) {end = len}
+            if (end > len) {end = len;}
 
             for (let j = start; j < end; j++) {
                 total_episode[j].checked = change_to;
@@ -58,13 +58,14 @@ function send_download_queue() {
     let data = {}
     data["url"] = document.getElementById("info_url").href;
     data["queue"] = [];
-    let queue = document.getElementsByClassName("episode_queue")[0];
+    let queue = document.querySelectorAll(".episode_box");
     for (let i = 0; i < queue.length; i++) {
         let content_element = queue[i];
         let temp_data = {};
         if (content_element.querySelector("input").checked) {
             temp_data["url"] = content_element.querySelector("input").value;
-            temp_data["index"] = content_element.querySelector("p");
+            temp_data["index"] = content_element.querySelector("p").textContent;
+            data["queue"].push(temp_data);
         }
     }
     xhttp.open("POST", "/", true);
