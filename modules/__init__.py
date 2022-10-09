@@ -7,4 +7,5 @@ from .logging_config import *
 from .downloader import *
 from .myself import *
 from .anime1 import *
+from .ani_gamer import *
 from .download_queue import *

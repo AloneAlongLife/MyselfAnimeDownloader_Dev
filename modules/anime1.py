@@ -1,6 +1,5 @@
 from logging import getLogger
 from time import time
-from turtle import title
 from typing import Optional
 from urllib.parse import unquote
 
@@ -8,22 +7,85 @@ from bs4 import BeautifulSoup
 from bs4.element import Tag
 from requests import get
 
-from modules import Cache, Config
+from modules import Config
 
 logger = getLogger("main")
 
 # 網址
 URL = Config.anime1_setting.url
 
+# 偽裝瀏覽器
+HEADERS = {
+    "User-Agent": Config.download_setting.user_agent
+}
+
 def google_search_redirect(url: str) -> Optional[str]:
     if "www.google.com/url?" in url:
         url = unquote(url.split("url=")[1].split("&")[0])
     if len(url.replace(URL, "").split("/")) == 2:
-        redirect = BeautifulSoup(Cache.cache_requests(url, read_from_cache=True), features="html.parser").select_one("a[href*=\"/?cat\"]").get("href")
+        redirect = BeautifulSoup(get(url, headers=HEADERS).content.decode(), features="html.parser").select_one("a[href*=\"/?cat\"]").get("href")
         url = f"{URL}{redirect}"
     return url
 
+def _total_data() -> list:
+    return get(url=f"https://d1zquzjgwo9yb.cloudfront.net/?_={int(time())}").json()
+
 class Anime1:
+    @staticmethod
+    def week_animate() -> list:
+        """
+        爬首頁的每週更新表。
+        (index 0 對應星期一)
+
+        return: :class:`list`
+        [
+            [
+                {
+                    "name": 動漫名字,
+                    "url": 動漫網址,
+                    "update": 更新集數,
+                },
+                {...}
+            ],
+            [...]
+        ]
+        """
+        main_page = BeautifulSoup(get(URL, headers=HEADERS).content.decode(), features="html.parser")
+        week_page_url = main_page.select_one("#primary-menu > li:nth-of-type(2) > a").get("href")
+        res = get(week_page_url, headers=HEADERS).content.decode()
+        if res == None: return []
+        total_data = _total_data()
+        total_data.sort()
+        offset = len(total_data) - total_data[-1][0]
+        week_data = [[], [], [], [], [], [], []]
+        CONV = [6, 0, 1, 2, 3, 4, 5]
+        col_list: list[Tag] = BeautifulSoup(res, features="html.parser").select("tbody > tr")[:-1]
+        for col in col_list:
+            empty_num = 0
+            week_list: list[Tag] = col.find_all("td")
+            for i in range(7):
+                day: Tag = week_list[i]
+                if day.findChild("a"):
+                    name = day.findChild().text
+                    url = day.findChild().get("href")
+                    update = ""
+                    num = int(url.split("=")[-1])
+                    for episode_data in total_data[num+offset::-1]:
+                        if episode_data[0] == num:
+                            update = episode_data[2]
+                            break
+                    week_data[CONV[i]].append({
+                        "name": name,
+                        "url": f"{URL}{url}",
+                        "update": update
+                    })
+                else:
+                    empty_num += 1
+            if empty_num >= 7: break
+        for i in range(7):
+            week_data[i] = sorted(week_data[i], key=lambda x: x.get("name"))
+        return week_data
+
     @staticmethod
     def animate_info_table(url: str) -> Optional[dict]:
         """
@@ -43,7 +105,7 @@ class Anime1:
         """
         url = google_search_redirect(url)
         if URL not in url: return None
-        res = Cache.cache_requests(url)
+        res = get(url, headers=HEADERS).content.decode()
         if res == None: return None
         # 一般信息
         res = BeautifulSoup(res, features="html.parser")
@@ -80,7 +142,7 @@ class Anime1:
             }
         }
         """
-        total_data: list = get(url=f"https://d1zquzjgwo9yb.cloudfront.net/?_={int(time())}").json()
+        total_data = _total_data()
         if total_data == None: return {}
         CONV_DATA = {
             "冬": "01月(冬)",
@@ -90,14 +152,15 @@ class Anime1:
         }
         data = {}
         for episode in total_data:
-            year = episode[3].split("/")[0]
-            season = episode[4].split("/")[0].replace(year, "")
-            title = f"{year}年{CONV_DATA[season]}"
-            name = episode[1]
-            url = f"{URL}/?cat={episode[0]}"
-            if data.get(year) == None: data[year] = {}
-            if data[year].get(title) == None: data[year][title] = []
-            data[year][title].append({"name": name, "url": url})
+            if episode[0]:
+                year = episode[3].split("/")[0]
+                season = episode[4].split("/")[0].replace(year, "")
+                title = f"{year}年{CONV_DATA[season]}"
+                name = episode[1]
+                url = f"{URL}/?cat={episode[0]}"
+                if data.get(year) == None: data[year] = {}
+                if data[year].get(title) == None: data[year][title] = []
+                data[year][title].append({"name": name, "url": url})
         return data
             
     @staticmethod

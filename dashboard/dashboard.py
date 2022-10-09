@@ -2,8 +2,8 @@ import logging
 from urllib.parse import unquote
 
 from flask import Flask, Request, make_response, render_template, request
-from modules import (Anime1, Cache, Config, Download_Queue, Json, Myself,
-                     google_search_redirect)
+from modules import (Ani_Gamer, Anime1, Cache, Config, Download_Queue, Json,
+                     Myself, google_search_redirect)
 
 logger = logging.getLogger("main")
 
@@ -64,6 +64,12 @@ def _deal_requeste(type_of: str, data: str | bytes, raw_requests: Request):
         elif action == "move":
             Download_Queue.move_to(uuid, raw_requests.json["target_index"])
         return Download_Queue.gen_dict()
+    elif type_of == "week_animate":
+        return Json.dumps({
+            "myself": Myself.week_animate(),
+            "anime1": Anime1.week_animate(),
+            "ani-gamer": Ani_Gamer.week_animate()
+        })
     # except:
     #     return ("", 404)
     return ("", 204)

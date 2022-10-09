@@ -240,7 +240,7 @@ function get_setting() {
 }
 
 function update_setting_form(data) {
-    // try {
+    try {
         let setting_list = document.getElementById("setting_form").getElementsByClassName("info_card");
         for (let i = 0; i < setting_list.length; i++) {
             let input_list = setting_list[i].getElementsByTagName("input")
@@ -254,8 +254,8 @@ function update_setting_form(data) {
                 }
             }
         }
-    // }
-    // catch {
-    //     setTimeout(()=>{update_setting_form(data);}, 1000);
-    // }
+    }
+    catch {
+        setTimeout(()=>{update_setting_form(data);}, 50);
+    }
 }

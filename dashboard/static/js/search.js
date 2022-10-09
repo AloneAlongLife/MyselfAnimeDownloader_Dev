@@ -1,3 +1,18 @@
+// 切換分頁
+function show_page(page_name) {
+    let page_list = document.querySelectorAll("#info > div.page");
+    for (let i = 0; i < page_list.length; i++) {
+        let page = page_list[i];
+        if (page.className.includes(page_name)) {
+            page.style["display"] = "";
+        }
+        else {
+            page.style["display"] = "none";
+        }
+    }
+}
+
+
 // 搜尋
 function search_keydown(element, e) {
     if (e.key=='Enter') {
@@ -10,12 +25,22 @@ function search_keydown(element, e) {
 }
 
 // 發送關鍵字
-function send_keyword(keyword, from_cache=true) {
+function send_keyword(keyword, from_cache=true, from=null) {
     let xhttp = new XMLHttpRequest();
-    let data = {
-        "keyword": keyword,
-        "cache": from_cache,
-        "from": get_source().toLowerCase()
+    let data;
+    if (from == null) {
+        data = {
+            "keyword": keyword,
+            "cache": from_cache,
+            "from": get_source().toLowerCase()
+        }
+    }
+    else {
+        data = {
+            "keyword": keyword,
+            "cache": from_cache,
+            "from": from
+        }
     }
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4) {
@@ -52,7 +77,7 @@ function update_animate_info(raw_data) {
             document.getElementById("info_img").src = `/cache/img?url=${encodeURI(animate_data["image"])}`;
             show_page("data");
 
-            update_episode_queue(animate_data);
+            update_episode_queue(raw_data);
         }
         else if (raw_data["from"] == "anime1") {
             for (let i = 0; i < _ID_LIST.length; i++) {
@@ -64,7 +89,7 @@ function update_animate_info(raw_data) {
             document.getElementById("info_img").src = "../static/img/blank.jpg";
             show_page("data");
 
-            update_episode_queue(animate_data, false);
+            update_episode_queue(raw_data, false);
         }
     }
     else {
@@ -92,8 +117,8 @@ function update_animate_info(raw_data) {
                     result_box.appendChild(createElement("p", {className: "cfont", textContent: raw_title.slice(index)}));
                 }
                 result_box.onclick = function() {
+                    send_keyword(url, from=raw_data["from"]);
                     show_page("loading");
-                    send_keyword(url);
                 };
                 results.appendChild(result_box);
             }
@@ -120,9 +145,15 @@ function update_animate_info(raw_data) {
 }
 
 // 更新集數列表
-function update_episode_queue(data, check_episode=true) {
+function update_episode_queue(raw_data, check_episode=true) {
     document.querySelector("div.episode_page.episode_loading").style["display"] = "";
     document.querySelector("div.episode_page.episode_content").style["display"] = "none";
+
+    let data = raw_data["data"]
+
+    if (raw_data["from"] != "myself") {
+        check_episode = false;
+    }
 
     if (check_episode) {
         let episode_num_check = `全 ${data["episode_data"].length} 話`;
@@ -130,14 +161,14 @@ function update_episode_queue(data, check_episode=true) {
             let xhttp = new XMLHttpRequest();
             let send_data = {
                 "keyword": data["url"],
-                "cache": false
+                "cache": false,
+                "from": raw_data["from"]
             }
             xhttp.onreadystatechange = function() {
                 if (this.readyState == 4) {
                     try {
                         let raw_data = JSON.parse(this.responseText);
-                        let animate_data = raw_data["data"];
-                        update_episode_queue(animate_data, false);
+                        update_episode_queue(raw_data, false);
                     }
                     catch {
                         show_page("search");
@@ -148,7 +179,9 @@ function update_episode_queue(data, check_episode=true) {
             xhttp.setRequestHeader("Content-type", "application/json");
             xhttp.setRequestHeader("Request-type", "animate_info");
             xhttp.send(JSON.stringify(send_data));
-            return;
+        }
+        else {
+            check_episode = false;
         }
     }
 
@@ -173,9 +206,12 @@ function update_episode_queue(data, check_episode=true) {
         episode_box.appendChild(check_box);
         queue_element.appendChild(episode_box);
     }
+    console.log(check_episode)
 
-    document.querySelector("div.episode_page.episode_content").style["display"] = "";
-    document.querySelector("div.episode_page.episode_loading").style["display"] = "none";
+    if (!check_episode) {
+        document.querySelector("div.episode_page.episode_content").style["display"] = "";
+        document.querySelector("div.episode_page.episode_loading").style["display"] = "none";
+    }
 }
 
 function update_source (element) {

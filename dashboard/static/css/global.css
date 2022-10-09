@@ -1,6 +1,7 @@
 @import url(https://fonts.googleapis.com/css2?family=Oooh+Baby);
 @import url(https://fonts.googleapis.com/css2?family=Noto+Sans+TC);
-@import url(https://fonts.googleapis.com/icon?family=Material+Icons);
+/* @import url(https://fonts.googleapis.com/icon?family=Material+Icons); */
+@import url(https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200);
 
 html,
 body {
@@ -38,6 +39,27 @@ body {
     padding-left: 48px;
 }
 
+.material-icons {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+    font-variation-settings:
+    'FILL' 1,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 48
+}
+
 ::-webkit-scrollbar {
     width: 8px;
 }
@@ -52,11 +74,8 @@ body {
     background-color: rgb(77, 77, 77);
 }
 
-@media (max-aspect-ratio: 1/1) {
-    /* #content {
-        height: auto;
-    } */
+/* @media (max-aspect-ratio: 1/1) {
     .content {
         height: calc(100% + 72px);
     }
-}
+} */

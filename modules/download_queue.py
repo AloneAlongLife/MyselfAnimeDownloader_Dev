@@ -7,7 +7,7 @@ from time import sleep, time
 from typing import Union
 from uuid import uuid4
 
-from modules import Anime1, Config, Downloader, Myself, Thread
+from modules import Anime1, Config, Segment_Downloader, Myself, Thread, downloader_generator
 
 MYSELF_URL = Config.myself_setting.url
 ANIME1_URL = Config.anime1_setting.url
@@ -72,25 +72,18 @@ def download_job(thread_id: int):
             continue
 
         data = DOWNLOAD_DATA[uuid]
-        downloader: Downloader = data["downloader"]
+        downloader: Segment_Downloader = data["downloader"]
         if downloader.status() == "unstart": downloader.start()
         elif downloader.status() == "pause": downloader.resume()
-        while not downloader.is_finish() and uuid in legal_uuid_queue:
+        while downloader.progress() < 1 and uuid in legal_uuid_queue:
             legal_uuid_queue = UUID_QUEUE[:Config.download_setting.download_thread]
             sleep(0.2)
-        if downloader.is_finish():
+        if downloader.progress() < 1:
             if downloader.download_exception:
-                data["exception"] += 1
-                if data["exception"] > Config.download_setting.download_retry:
-                    downloader.clean_up()
-                    data["fail"] = True
-                    FINISH_UUID[uuid] = time()
-                    UUID_QUEUE.remove(uuid)
-                    ACTIVATE_UUID[thread_id] = None
-                else:
-                    downloader = Downloader(data["video_url"], data["file_name"], data["dir_path"])
-                    data["downloader"] = downloader
-                    ACTIVATE_UUID[thread_id] = None
+                data["fail"] = True
+                FINISH_UUID[uuid] = time()
+                UUID_QUEUE.remove(uuid)
+                ACTIVATE_UUID[thread_id] = None
             else:
                 FINISH_UUID[uuid] = time()
                 UUID_QUEUE.remove(uuid)
@@ -106,9 +99,9 @@ def auto_clear_job():
                 if time() - FINISH_UUID[key] > 300:
                     del FINISH_UUID[key]
                     del DOWNLOAD_DATA[key]
-            sleep(10)
-        except:
-            continue
+            for _ in range(100): sleep(0.1)
+        except SystemExit: break
+        except: continue
 
 
 class Download_Queue:
@@ -120,7 +113,6 @@ class Download_Queue:
         video_data = {
             "url": url,
             "video_url": video_url,
-            "exception": 0,
             "fail": False
         }
         if MYSELF_URL in url:
@@ -137,7 +129,7 @@ class Download_Queue:
         file_name = gen_name(video_data["type"], "file", episode, animate_data)
         video_data["dir_path"] = dir_path
         video_data["file_name"] = file_name
-        video_data["downloader"] = Downloader(video_url, file_name, dir_path)
+        video_data["downloader"] = downloader_generator(video_url, file_name, dir_path)
 
         DOWNLOAD_DATA[download_uuid] = video_data
         UUID_QUEUE.append(download_uuid)
@@ -183,7 +175,7 @@ class Download_Queue:
         data = {}
         order = 0
         for uuid in sort_list:
-            downloader: Downloader = DOWNLOAD_DATA[uuid]["downloader"]
+            downloader: Segment_Downloader = DOWNLOAD_DATA[uuid]["downloader"]
             status = downloader.status()
             if status == "pause" and uuid not in ACTIVATE_UUID:
                 status = "unstart"

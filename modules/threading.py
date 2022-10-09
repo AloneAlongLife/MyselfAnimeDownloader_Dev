@@ -75,11 +75,12 @@ class ThreadPool():
 def _auto_kill():
     while threading.main_thread().is_alive():
         sleep(0.1)
-    for thread in threading.enumerate():
-        if thread.ident != threading.current_thread().ident and thread.is_alive():
-            thread.stop()
-            thread.join()
-    threading.current_thread()
+    for _ in range(3):
+        for thread in threading.enumerate():
+            if thread.ident != threading.current_thread().ident and thread.is_alive():
+                thread.stop()
+                thread.join()
+    threading.current_thread().stop()
 
 def restart():
     thr = threading.main_thread()

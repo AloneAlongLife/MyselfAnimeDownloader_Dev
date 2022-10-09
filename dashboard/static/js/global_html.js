@@ -8,17 +8,3 @@ function createElement(el, options={}){
     });
     return element;
 }
-
-// 切換分頁
-function show_page(page_name) {
-    let page_list = document.querySelectorAll("#info > div.page");
-    for (let i = 0; i < page_list.length; i++) {
-        let page = page_list[i];
-        if (page.className.includes(page_name)) {
-            page.style["display"] = "";
-        }
-        else {
-            page.style["display"] = "none";
-        }
-    }
-}

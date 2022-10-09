@@ -13,6 +13,11 @@ logger = getLogger("main")
 # 網址
 URL = Config.myself_setting.url
 
+# 偽裝瀏覽器
+HEADERS = {
+    "User-Agent": Config.download_setting.user_agent
+}
+
 # 動漫資訊的 Key 對照表
 ANIMATE_TABLE = {
     "作品類型": "animate_type",
@@ -33,7 +38,7 @@ def google_search_redirect(url: str) -> Optional[str]:
 
 class Myself:
     @staticmethod
-    def week_animate(read_from_cache: bool=True) -> list:
+    def week_animate() -> list:
         """
         爬首頁的每週更新表。
         (index 0 對應星期一)
@@ -44,7 +49,6 @@ class Myself:
                 {
                     "name": 動漫名字,
                     "url": 動漫網址,
-                    "color": 字體顏色,
                     "update": 更新集數,
                 },
                 {...}
@@ -52,7 +56,7 @@ class Myself:
             [...]
         ]
         """
-        res = Cache.cache_requests(url=f"{URL}/portal.php", read_from_cache=read_from_cache)
+        res = get(f"{URL}/portal.php", headers=HEADERS).content.decode()
         if res == None: return []
         week_data = []
         week_elements: list[Tag] = BeautifulSoup(res, features="html.parser").select("#tabSuCvYn div.module.cl.xl.xl1")
@@ -65,11 +69,12 @@ class Myself:
                     {
                         "name": _fonts[0].text,
                         "url": f"{URL}/{_a.get('href')}",
-                        "color": _fonts[2].get("style")[:-1].split(": ")[1],
                         "update": _fonts[2].text
                     }
                 )
             week_data.append(day_data)
+        for i in range(7):
+            week_data[i] = sorted(week_data[i], key=lambda x: x.get("name"))
         return week_data
 
     @staticmethod
@@ -124,7 +129,7 @@ class Myself:
         return data
 
     @staticmethod
-    def finish_list(read_from_cache: bool=True) -> dict:
+    def finish_list() -> dict:
         """
         取得完結列表頁面的動漫資訊。
 
@@ -136,7 +141,7 @@ class Myself:
             }
         }
         """
-        res = Cache.cache_requests(url=f"{URL}/portal.php?mod=topic&topicid=8", read_from_cache=read_from_cache)
+        res = get(f"{URL}/portal.php?mod=topic&topicid=8", headers=HEADERS).content.decode()
         if res == None: return {}
         data = {}
         all_years: list[Tag] = BeautifulSoup(res, features="html.parser").find_all("div", class_="tab-title title column cl")
@@ -170,7 +175,7 @@ class Myself:
         ]
         """
         first_url = get(url=f"{URL}/search.php?mod=forum&srchtxt={keyword}&searchsubmit=yes").url
-        res = Cache.cache_requests(first_url, save_to_cache=False)
+        res = get(first_url, headers=HEADERS).content.decode()
         if res == None:
             return []
         result_pages: list[BeautifulSoup] = [BeautifulSoup(res, features="html.parser")]
@@ -179,7 +184,7 @@ class Myself:
         data = []
         page_num = result_num // 20 + 1
         for i in range(2, page_num + 1):
-            result_pages.append(BeautifulSoup(Cache.cache_requests(f"{first_url}&page={i}", save_to_cache=False), features="html.parser"))
+            result_pages.append(BeautifulSoup(get(f"{first_url}&page={i}", headers=HEADERS).content.decode(), features="html.parser"))
         for result_page in result_pages:
             for animate_element in result_page.select("#threadlist li"):
                 data.append({"title": animate_element.find("h3").text.replace("\n", "").lstrip(), "url": f"{URL}/thread-{animate_element['id']}-1-1.html"})

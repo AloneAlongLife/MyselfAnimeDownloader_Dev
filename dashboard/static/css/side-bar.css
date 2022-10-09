@@ -86,10 +86,12 @@
     margin: auto;
     flex: 1;
     font-size: 1.5em;
+    font-weight: bold;
+    letter-spacing: 2px;
     color: rgb(169, 169, 169);
 }
 
-@media (max-aspect-ratio: 1/1) {
+/* @media (max-aspect-ratio: 1/1) {
     #side-bar {
         z-index: 2;
     }
@@ -112,4 +114,4 @@
     #side-bar button {
         border-left-width: 0px;
     }
-}
+} */
