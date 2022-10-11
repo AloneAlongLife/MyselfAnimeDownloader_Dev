@@ -1,0 +1,11 @@
+pyinstaller --clean
+pyinstaller `
+ -F "main.py" `
+ --workpath "pyist/build" `
+ --distpath "pyist/dist" `
+ --specpath "pyist" `
+ --icon "logo.ico" `
+ --add-data="../dashboard/templates;dashboard/templates" `
+ --add-data="../dashboard/static;dashboard/static" `
+ --name "MyselfAnimeDownloader_Dev"
+pyinstaller "pyist/MyselfAnimeDownloader_Dev.spec"

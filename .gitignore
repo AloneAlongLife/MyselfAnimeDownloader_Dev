@@ -138,3 +138,5 @@ test/
 cache/
 temp/
 *.mp4
+debug/
+release/

@@ -15,12 +15,50 @@ _FILE_PATH = "config.json"
 _CONFIG: dict
 modify_time = 0
 
+_CONFIG_EXAMPLE = {
+    "web_console": {
+        "host": "0.0.0.0",
+        "port": 5005,
+        "debug": True
+    },
+    "download_setting": {
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.114 Safari/537.36 OPR/89.0.4447.64 (Edition GX-CN)",
+        "animate_classify": True,
+        "download_connection": 10,
+        "download_thread": 3,
+        "download_retry": 3,
+        "zerofile": 2
+    },
+    "myself_setting": {
+        "url": "https://myself-bbs.com",
+        "check_animate_update": 5,
+        "customized_file_name": "[Myself]$N $E集",
+        "customized_dir_name": "[Myself]$N",
+        "download_path": "download"
+    },
+    "anime1_setting": {
+        "url": "https://anime1.me",
+        "check_animate_update": 5,
+        "customized_file_name": "[Anime1]$N $E集",
+        "customized_dir_name": "[Anime1]$N",
+        "download_path": "download"
+    },
+    "other_setting": {
+        "time_zone": 8,
+        "ffmpeg_args": "",
+        "log_level": "INFO",
+        "version": "0.1"
+    }
+}
+
 _auto_update_lock = Lock()
 
 def _gen_config():
     """
     如果沒有設置檔，則從範例中生成。
     """
+    if not isfile("config-example.json"):
+        Json.dump("config-example.json", _CONFIG_EXAMPLE)
     with open("config-example.json", mode="rb") as example_file:
         EXAMPLE_DATA = example_file.read()
     with open(_FILE_PATH, mode="wb") as config_file:
